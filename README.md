@@ -33,12 +33,14 @@
 miner = GoogleMiner()</code></pre>
     <h3><strong>2️⃣ Fetch Imagery and Metadata</strong></h3>
     <p>Specify a location using latitude, longitude, and radius, or define a bounding box (<code>bbox</code>), and fetch the corresponding data:</p>
-    <pre><code><font color='green'># Fetch imagery and metadata by location</font>
+    <pre><code># Fetch imagery and metadata by location
 ds = miner.fetch(lat=40.748817, lon=-73.985428, radius=500)
-### Alternatively, fetch by bounding box
+<br># Alternatively, fetch by bounding box
 bbox = (-74.0, 40.7, -73.9, 40.8)
-ds = miner.fetch(bbox=bbox, resolution=1)</code></pre>
-
+ds = miner.fetch(bbox=bbox, resolution=1)
+<br>
+# Alternatively, fetch by shapely.geometry.Polygon
+ds = miner.fetch(polygon=polygon, resolution=1)</code></pre>
     <h3><strong>3️⃣ Access the Data</strong></h3>
     <p>The returned <code>xarray.Dataset</code> contains the imagery and associated metadata:</p>
     <pre><code># Access the image data

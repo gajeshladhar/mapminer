@@ -7,6 +7,9 @@
 <body>
     <h1>🌍 <strong>MapMiner</strong> </h1>
     <p>
+    <a href="https://colab.research.google.com/drive/1steVa5hY0SqUabvFLb0J4ypRWgSs7io9?usp=sharing" target="_blank">
+    <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab"/>
+</a>
         <img src="https://img.shields.io/badge/Python-3.x-blue.svg?style=flat-square&logo=python" alt="Python">
         <img src="https://img.shields.io/badge/Xarray-0.18+-orange.svg?style=flat-square&logo=xarray" alt="Xarray">
         <img src="https://img.shields.io/badge/Dask-Powered-yellow.svg?style=flat-square&logo=dask" alt="Dask">

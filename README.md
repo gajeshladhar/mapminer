@@ -27,7 +27,7 @@
     <h2>🛠 <strong>Installation</strong></h2>
     <p>Ensure you have the necessary dependencies installed:</p>
     <pre>
-    <code>pip3 install -r requirements.txt</code></pre>
+    <code>pip3 install .</code></pre>
     <h2>📝 <strong>Usage</strong></h2>
     <p>MapMiner provides a streamlined API to fetch and process imagery and metadata:</p>
     <h3><strong>1️⃣ Initialize the Miner</strong></h3>

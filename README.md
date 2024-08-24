@@ -26,11 +26,9 @@
     </ul><br>
     <h2>🛠 <strong>Installation</strong></h2>
     <p>Ensure you have the necessary dependencies installed:</p>
-    <pre>
-    <code>
-    git clone https://github.com/gajeshladhar/mapminer.git<br>
+    <code>git clone https://github.com/gajeshladhar/mapminer.git<br>
     cd mapminer<br>
-    pip3 install .</code></pre>
+    pip3 install .</code>
     <h2>📝 <strong>Usage</strong></h2>
     <p>MapMiner provides a streamlined API to fetch and process imagery and metadata:</p>
     <h3><strong>1️⃣ Initialize the Miner</strong></h3>

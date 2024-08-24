@@ -35,7 +35,8 @@ miner = GoogleMiner()</code></pre>
     <p>Specify a location using latitude, longitude, and radius, or define a bounding box (<code>bbox</code>), and fetch the corresponding data:</p>
     <pre><code># Fetch imagery and metadata by location
 ds = miner.fetch(lat=40.748817, lon=-73.985428, radius=500)
-<br># Alternatively, fetch by bounding box
+<br>
+# Alternatively, fetch by bounding box
 bbox = (-74.0, 40.7, -73.9, 40.8)
 ds = miner.fetch(bbox=bbox, resolution=1)
 <br>
@@ -45,9 +46,9 @@ ds = miner.fetch(polygon=polygon, resolution=1)</code></pre>
     <p>The returned <code>xarray.Dataset</code> contains the imagery and associated metadata:</p>
     <pre><code># Access the image data
 image_data = ds.data
-### Access the metadata
+# Access the metadata
 metadata = ds.attrs['metadata']
-print(metadata['date']['value'])  # Print the date of the imagery</code></pre>
+</code></pre>
     <h2>⚙️ <strong>How It Works</strong></h2>
     <p>MapMiner combines several powerful libraries to provide a seamless and efficient workflow:</p>
     <ul>
@@ -63,19 +64,19 @@ ds = miner.fetch(lat=34.052235, lon=-118.243683, radius=1000, resolution=0.5)</c
     <h2>🧪 <strong>Example</strong></h2>
     <p>Below is an example of how to use MapMiner to download basemap tiles and retrieve metadata:</p>
     <pre><code>from mapminer import GoogleMiner
-### Initialize the miner
+# Initialize the miner
 miner = GoogleMiner()
-### Fetch the data
+# Fetch the data
 ds = miner.fetch(lat=51.5074, lon=-0.1278, radius=1000)
-### Access image data and metadata
+# Access image data and metadata
 image = ds.data
 metadata = ds.attrs['metadata']
-### Output the date the image was captured
+# Output the date the image was captured
 print("Captured Date:", metadata['date']['value'])</code></pre>
     <h2>🖼 <strong>Visualizing the Data</strong></h2>
     <p>MapMiner outputs can be easily visualized using popular Python libraries like <code>matplotlib</code> or <code>hvplot</code>:</p>
     <pre><code>import matplotlib.pyplot as plt
-### Visualize the fetched imagery
+# Visualize the fetched imagery
 plt.imshow(ds.data)
 plt.title(f"Captured on {metadata['date']['value']}")
 plt.show()</code></pre>
@@ -90,7 +91,5 @@ plt.show()</code></pre>
     </ul>
     <h2>🛠 <strong>Contributing</strong></h2>
     <p>Contributions are welcome! Please fork this repository and submit pull requests. Make sure to include tests for any new features or bug fixes.</p>
-    <h2>📝 <strong>License</strong></h2>
-    <p>This project is licensed under the MIT License. See the <a href="LICENSE">LICENSE</a> file for details.</p>
 </body>
 </html>

@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MapMiner README</title>
 </head>
 <body>
-    <h1>🌍 <strong>MapMiner</strong> 🌍</h1>
+    <h1>🌍 <strong>MapMiner</strong> </h1>
     <p>
         <img src="https://img.shields.io/badge/Python-3.x-blue.svg?style=flat-square&logo=python" alt="Python">
         <img src="https://img.shields.io/badge/Xarray-0.18+-orange.svg?style=flat-square&logo=xarray" alt="Xarray">
@@ -14,27 +13,27 @@
         <img src="https://img.shields.io/badge/Numba-Accelerated-green.svg?style=flat-square&logo=numba" alt="Numba">
         <img src="https://img.shields.io/badge/Selenium-Automated-informational.svg?style=flat-square&logo=selenium" alt="Selenium">
     </p>
-    <p><strong>MapMiner</strong> is an advanced geospatial tool designed to efficiently download and process Google basemap imagery and associated metadata. Leveraging powerful Python libraries like <strong>Selenium</strong>, <strong>Dask</strong>, <strong>Numba</strong>, and <strong>Xarray</strong>, MapMiner offers high-performance data retrieval and processing capabilities for geospatial analysis and visualization.</p><br>
+    <p><strong>MapMiner</strong> is geospatial tool designed to efficiently download and process the geospatial data and associated metadata from various sources. Leveraging powerful Python libraries like <strong>Selenium</strong>, <strong>Dask</strong>, <strong>Numba</strong>, and <strong>Xarray</strong>, MapMiner offers high-performance data retrieval and processing capabilities for geospatial analysis and visualization.</p><br>
     <h2>🚀 <strong>Key Features</strong></h2>
     <ul>
-        <li><strong>🌐 Selenium:</strong> Automated web interactions to extract metadata from Google Earth.</li>
+        <li><strong>🌐 Selenium:</strong> Automated web interactions to extract metadata from various sources.</li>
         <li><strong>⚙️ Dask:</strong> Distributed computing to manage large datasets and parallelize tasks.</li>
         <li><strong>🚀 Numba:</strong> JIT compilation for accelerating numerical computations.</li>
-        <li><strong>📊 Xarray:</strong> Advanced data handling for multi-dimensional arrays, enabling seamless integration with geospatial data.</li>
+        <li><strong>📊 Xarray:</strong> Flexible data handling for multi-dimensional arrays, enabling seamless integration.</li>
     </ul><br>
     <h2>🛠 <strong>Installation</strong></h2>
     <p>Ensure you have the necessary dependencies installed:</p>
     <pre>
-    <code>pip install selenium dask numba xarray requests easyocr</code></pre>
+    <code>pip3 install -r requirements.txt</code></pre>
     <h2>📝 <strong>Usage</strong></h2>
     <p>MapMiner provides a streamlined API to fetch and process imagery and metadata:</p>
     <h3><strong>1️⃣ Initialize the Miner</strong></h3>
     <p>Start by creating an instance of the <code>GoogleMiner</code> class:</p>
-    <pre><code>from mapminer import GoogleMiner
+    <pre><code>from mapminer.miner import GoogleMiner
 miner = GoogleMiner()</code></pre>
     <h3><strong>2️⃣ Fetch Imagery and Metadata</strong></h3>
     <p>Specify a location using latitude, longitude, and radius, or define a bounding box (<code>bbox</code>), and fetch the corresponding data:</p>
-    <pre><code># Fetch imagery and metadata by location
+    <pre><code><font color='green'># Fetch imagery and metadata by location</font>
 ds = miner.fetch(lat=40.748817, lon=-73.985428, radius=500)
 ### Alternatively, fetch by bounding box
 bbox = (-74.0, 40.7, -73.9, 40.8)

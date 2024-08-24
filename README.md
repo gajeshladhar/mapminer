@@ -52,7 +52,7 @@ metadata = ds.attrs['metadata']
     <h2>⚙️ <strong>How It Works</strong></h2>
     <p>MapMiner combines several powerful libraries to provide a seamless and efficient workflow:</p>
     <ul>
-        <li><strong>Selenium</strong> automates the process of metadata extraction from Google Earth, taking screenshots and using OCR to extract relevant information.</li>
+        <li><strong>Selenium</strong> automates the process of metadata extraction from varoius sources, taking screenshots and using OCR to extract relevant information.</li>
         <li><strong>Dask</strong> manages large datasets, enabling parallelized downloads and computations, which is crucial for handling extensive basemap data.</li>
         <li><strong>Numba</strong> is utilized to speed up computationally expensive tasks, ensuring that the processing is both fast and efficient.</li>
         <li><strong>Xarray</strong> is used to handle the multi-dimensional array data, providing an intuitive interface for working with geospatial imagery and metadata.</li>

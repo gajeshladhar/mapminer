@@ -1,4 +1,4 @@
-from google_miner import GoogleMiner
+from .google_miner import GoogleMiner
 
 if __name__=="__main__":
     miner = GoogleMiner()

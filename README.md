@@ -14,7 +14,6 @@
         <img src="https://img.shields.io/badge/Numba-Accelerated-green.svg?style=flat-square&logo=numba" alt="Numba">
         <img src="https://img.shields.io/badge/Selenium-Automated-informational.svg?style=flat-square&logo=selenium" alt="Selenium">
     </p>
-
     <p><strong>MapMiner</strong> is an advanced geospatial tool designed to efficiently download and process Google basemap imagery and associated metadata. Leveraging powerful Python libraries like <strong>Selenium</strong>, <strong>Dask</strong>, <strong>Numba</strong>, and <strong>Xarray</strong>, MapMiner offers high-performance data retrieval and processing capabilities for geospatial analysis and visualization.</p>
 
     <h2>🚀 <strong>Key Features</strong></h2>

@@ -103,7 +103,7 @@ class GoogleMiner():
         """
         lon,lat = list(box(*bbox).centroid.coords)[0]
         
-        self.driver.get(self.generate_google_earth_url(lat,lon,15))
+        self.driver.get(self.generate_google_earth_url(lat,lon,13))
         time.sleep(1)
         body = self.driver.find_element(By.TAG_NAME, "body")
         body.send_keys(Keys.ESCAPE)

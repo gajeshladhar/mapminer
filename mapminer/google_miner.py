@@ -7,10 +7,13 @@ from io import BytesIO
 import numpy as np
 import pandas as pd
 import xarray as xr
+
+from paddleocr import PaddleOCR
 import easyocr
 from shapely import Polygon, Point, box
 from rasterio.transform import from_bounds
 import dask
+from IPython.display import clear_output
 
 import locale
 import time
@@ -30,12 +33,14 @@ class GoogleMiner():
     - Generate Google Earth URLs based on coordinates.
     """
     
-    def __init__(self):
+    def __init__(self,ocr='paddle'):
         """
         Initializes the GoogleMiner with headless Chrome for web scraping and an OCR reader.
         """
+        self.ocr = ocr
         self.driver = self.get_driver()
         self.reader = self.get_ocr_reader()
+        clear_output()
     
     def get_driver(self):
         chrome_options = Options()
@@ -46,7 +51,59 @@ class GoogleMiner():
         return driver
     
     def get_ocr_reader(self):
-        return easyocr.Reader(['en'])
+        if self.ocr=='easy':
+            return easyocr.Reader(['en'])
+        else : 
+            return PaddleOCR(use_angle_cls=True, lang='en')
+    
+    def read_text_easy(self,data):
+        text = self.reader.readtext(image=data)
+        date = None
+        confidence = None
+        for _ in text:
+            try : 
+                if len(re.sub(r'[^0-9/]', '',_[1]))>5:
+                    t = _[1]
+                    t = re.sub(r'[^0-9/]', '',t)
+                    if len(re.findall('\/',t))<=1:
+                        t = re.sub(r'\/', '',t)
+                        t = re.sub(r'(\d{1,2})(\d{1,2})(\d{4})', r'\1/\2/\3',t)
+                    date = str(pd.to_datetime(t, format='%m/%d/%Y' if locale.getlocale()[0] == 'en_US' else '%d/%m/%Y').date())
+                    confidence = _[2]
+                    if len(date)>5:
+                        break
+                    else : 
+                        raise
+            except : 
+                date = None
+                confidence = None
+                continue
+        return date,confidence
+    
+    def read_text_paddle(self,data):
+        text = self.reader.ocr(data)[0]
+        date = None
+        confidence = None
+        for _ in text:
+            try : 
+                if len(re.sub(r'[^0-9/]', '',_[1][0]))>5:
+                    t = _[1][0]
+                    t = re.sub(r'[^0-9/]', '',t)
+                    if len(re.findall('\/',t))<=1:
+                        t = re.sub(r'\/', '',t)
+                        t = re.sub(r'(\d{1,2})(\d{1,2})(\d{4})', r'\1/\2/\3',t)
+                    date = str(pd.to_datetime(t, format='%m/%d/%Y' if locale.getlocale()[0] == 'en_US' else '%d/%m/%Y').date())
+                    confidence = _[1][1]
+                    if len(date)>5:
+                        break
+                    else : 
+                        raise
+            except : 
+                date = None
+                confidence = None
+                continue
+        return date,confidence
+                
     
     def fetch(self,lat=None,lon=None,radius=None,bbox=None,polygon=None,resolution=1):
         """
@@ -108,6 +165,9 @@ class GoogleMiner():
         body = self.driver.find_element(By.TAG_NAME, "body")
         body.send_keys(Keys.ESCAPE)
         max_tries=10
+        date = None
+        confidence = None
+        
         while max_tries>0:
             max_tries-=1
             time.sleep(1)
@@ -117,27 +177,11 @@ class GoogleMiner():
             data = np.array(image)
             ds = xr.DataArray(data=data,dims=['y','x','band'],coords={'band':[0,1,2],'y':range(data.shape[0]),'x':range(data.shape[1])})
             data = data[int(data.shape[0]*0.940):,int(data.shape[1]*0.16):int(data.shape[1]*0.48)]
-            text = self.reader.readtext(image=data)
-            date = None
-            confidence = None
-            for _ in text:
-                try : 
-                    if len(re.sub(r'[^0-9/]', '',_[1]))>5:
-                        t = _[1]
-                        t = re.sub(r'[^0-9/]', '',t)
-                        if len(re.findall('\/',t))<=1:
-                            t = re.sub(r'\/', '',t)
-                            t = re.sub(r'(\d{1,2})(\d{1,2})(\d{4})', r'\1/\2/\3',t)
-                        date = str(pd.to_datetime(t, format='%m/%d/%Y' if locale.getlocale()[0] == 'en_US' else '%d/%m/%Y').date())
-                        confidence = _[2]
-                        if len(date)>5:
-                            break
-                        else : 
-                            raise
-                except : 
-                    date = None
-                    confidence = None
-                    continue
+            try : 
+                date,confidence = self.read_text_paddle(data) if self.ocr=='paddle' else self.read_text_easy(data)
+            except : 
+                pass
+            clear_output()
             if date is not None:
                 break
         metadata = {

@@ -10,3 +10,5 @@ selenium==4.23.1
 Shapely==2.0.6
 xarray==2024.2.0
 hvplot==0.9.1
+paddlepaddle
+paddleocr

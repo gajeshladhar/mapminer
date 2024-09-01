@@ -123,7 +123,10 @@ class GoogleMiner():
             for _ in text:
                 try : 
                     if len(re.sub(r'[^0-9/]', '',_[1]))>5:
-                        date = str(pd.to_datetime(re.sub(r'[^0-9/]', '',_[1]), format='%m/%d/%Y' if locale.getlocale()[0] == 'en_US' else '%d/%m/%Y').date())
+                        t = _[1]
+                        if '/' not in t:
+                            t = re.sub(r'(\d{1,2})(\d{1,2})(\d{4})', r'\1/\2/\3',t)
+                        date = str(pd.to_datetime(re.sub(r'[^0-9/]', '',t), format='%m/%d/%Y' if locale.getlocale()[0] == 'en_US' else '%d/%m/%Y').date())
                         confidence = _[2]
                         if len(date)>5:
                             break

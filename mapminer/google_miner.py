@@ -21,6 +21,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
+import undetected_chromedriver as uc
 
 
 class GoogleMiner():
@@ -47,7 +48,7 @@ class GoogleMiner():
         chrome_options.add_argument("--headless")
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--no-sandbox")
-        driver = webdriver.Chrome(options=chrome_options)
+        driver = uc.Chrome(options=chrome_options)
         return driver
     
     def get_ocr_reader(self):
@@ -160,7 +161,7 @@ class GoogleMiner():
         """
         lon,lat = list(box(*bbox).centroid.coords)[0]
         
-        self.driver.get(self.generate_google_earth_url(lat,lon,13))
+        self.driver.get(self.generate_google_earth_url(lat,lon,11))
         time.sleep(2)
         body = self.driver.find_element(By.TAG_NAME, "body")
         body.send_keys(Keys.ESCAPE)
@@ -176,7 +177,7 @@ class GoogleMiner():
             self.image = image
             data = np.array(image)
             ds = xr.DataArray(data=data,dims=['y','x','band'],coords={'band':[0,1,2],'y':range(data.shape[0]),'x':range(data.shape[1])})
-            data = data[int(data.shape[0]*0.940):,int(data.shape[1]*0.16):int(data.shape[1]*0.48)]
+            data = data[int(data.shape[0]*0.940):,int(data.shape[1]*0.05):int(data.shape[1]*0.48)]
             try : 
                 date,confidence = self.read_text_paddle(data) if self.ocr=='paddle' else self.read_text_easy(data)
             except : 

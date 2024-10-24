@@ -42,9 +42,7 @@
 
 <h2>🛠 <strong>Installation</strong></h2>
 <p>Ensure you have the necessary dependencies installed:</p>
-<pre><code class="highlight">git clone https://github.com/gajeshladhar/mapminer.git
-cd mapminer
-pip3 install .</code></pre>
+<pre><code class="highlight">pip3 install mapminer</code></pre>
     <h2>📝 <strong>Usage</strong></h2>
     <p>MapMiner provides multiple classes to fetch and process different types of geospatial data:</p>
     <h3><strong>1️⃣ GoogleBaseMapMiner</strong></h3>

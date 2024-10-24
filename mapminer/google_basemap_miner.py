@@ -22,6 +22,11 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 import undetected_chromedriver as uc
 
+import shutil
+import platform
+import os
+import subprocess
+
 
 class GoogleBaseMapMiner():
     """
@@ -42,13 +47,63 @@ class GoogleBaseMapMiner():
         self.reader = self.get_ocr_reader()
         clear_output()
     
+
+    def install_chrome(self):
+        # Install Google Chrome in Colab
+        print("Installing Google Chrome in Colab...")
+        subprocess.run(['apt-get', 'update'], check=True)
+        subprocess.run(['apt-get', 'install', '-y', 'wget', 'unzip', 'libvulkan1'], check=True)
+        subprocess.run(['wget', 'https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb'], check=True)
+        subprocess.run(['dpkg', '-i', 'google-chrome-stable_current_amd64.deb'], check=True)
+        subprocess.run(['apt-get', '-f', 'install', '-y'], check=True)
+
+        # Get the Chrome binary location
+        chrome_path = subprocess.check_output(['which', 'google-chrome']).decode('utf-8').strip()
+        print(f"Google Chrome installed at: {chrome_path}")
+        return chrome_path
+
     def get_driver(self):
         chrome_options = Options()
         chrome_options.add_argument("--headless")
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--no-sandbox")
+
+        # Function to detect Chrome binary path based on platform
+        def find_chrome_path():
+            system_platform = platform.system()
+            if system_platform == "Linux":
+                return shutil.which("google-chrome") or shutil.which("chromium-browser")
+            elif system_platform == "Darwin":  # macOS
+                return shutil.which("google-chrome")
+            elif system_platform == "Windows":
+                possible_paths = [
+                    os.getenv('ProgramFiles') + r'\Google\Chrome\Application\chrome.exe',
+                    os.getenv('ProgramFiles(x86)') + r'\Google\Chrome\Application\chrome.exe'
+                ]
+                for path in possible_paths:
+                    if os.path.exists(path):
+                        return path
+                return None
+            return None
+
+        # Try to find the Chrome binary path automatically
+        chrome_path = find_chrome_path()
+        
+        # If Chrome is not detected, install it in Colab
+        if not chrome_path and platform.system() == "Linux":
+            chrome_path = self.install_chrome()
+
+        # If still not detected, raise an error
+        if not chrome_path:
+            raise FileNotFoundError("Chrome binary not found. Please install Google Chrome or specify the path manually.")
+        
+        # Set the Chrome binary location
+        chrome_options.binary_location = chrome_path
+        
+        # Initialize undetected_chromedriver with options
         driver = uc.Chrome(options=chrome_options)
         return driver
+
     
     def get_ocr_reader(self):
         if self.ocr=='easy':

@@ -7,7 +7,7 @@ import geopandas as gpd
 from shapely.geometry import Polygon, Point
 import dask
 from cryptography.fernet import Fernet
-
+import importlib.resources as pkg_resources
 
 class GoogleBuildingMiner:
     """
@@ -47,21 +47,31 @@ class GoogleBuildingMiner:
             
         return df_building
     
-    def autheticate(self, json_path: str):
+    def authenticate(self, json_path: str = None):
         """
         Authenticates with Google Earth Engine using a service account.
         
         Args:
-            json_path (str): Path to the service account JSON file.
+            json_path (str): Path to the service account JSON file. If not provided, 
+                            the method will use the encrypted key from the package's 'keys' folder.
         """
-        if json_path is None : 
-            key = open('keys/secret_key.key', 'rb').read(); cipher = Fernet(key)
-            decrypted_key = cipher.decrypt(open('keys/google_service_account.json', 'rb').read())
+        if json_path is None:
+            # Access keys using importlib.resources
+            with pkg_resources.path('mapminer.keys', 'secret_key.key') as key_path:
+                key = open(key_path, 'rb').read()
+            
+            cipher = Fernet(key)
+            
+            # Decrypt the Google service account JSON file
+            with pkg_resources.path('mapminer.keys', 'google_service_account.json') as json_key_path:
+                encrypted_json = open(json_key_path, 'rb').read()
+            
+            decrypted_key = cipher.decrypt(encrypted_json)
             service_account_config = json.loads(decrypted_key)
-        else : 
-            # Load service account configuration
+        else:
+            # Load service account configuration from the provided JSON path
             service_account_config = json.load(open(json_path))
-        
+
         # Authenticate with GEE using service account credentials
         credentials = ee.ServiceAccountCredentials(
             service_account_config['client_email'],

@@ -1,5 +1,6 @@
 import planetary_computer
 import pystac_client
+import rioxarray
 from odc.stac import load
 import xarray as xr
 from shapely.geometry import Polygon, Point, box

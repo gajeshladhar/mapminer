@@ -1,6 +1,7 @@
 import requests
 import numpy as np
 import xarray as xr
+import rioxarray
 from PIL import Image
 from io import BytesIO
 from shapely.geometry import Point

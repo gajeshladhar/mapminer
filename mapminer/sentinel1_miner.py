@@ -2,6 +2,7 @@ import planetary_computer
 from odc.stac import load
 import xarray as xr
 import numpy as np
+import rioxarray
 from pystac_client import Client
 from shapely.geometry import Polygon, Point, box
 

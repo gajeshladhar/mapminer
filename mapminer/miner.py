@@ -6,6 +6,8 @@ from .sentinel1_miner import Sentinel1Miner
 from .sentinel2_miner import Sentinel2Miner
 from .dem_miner import DEMMiner
 from .esri_lulc_miner import ESRILULCMiner
+from .esri_basemap_miner import ESRIBaseMapMiner
+from .naip_miner import NAIPMiner
 
 if __name__=="__main__":
     miner = GoogleBaseMapMiner()

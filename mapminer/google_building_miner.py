@@ -2,6 +2,7 @@ import ee
 import json
 import numpy as np
 import pandas as pd
+import rioxarray
 import geopandas as gpd
 from shapely.geometry import Polygon, Point
 import dask

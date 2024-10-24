@@ -1,5 +1,6 @@
 import numpy as np
 import xarray as xr
+import rioxarray
 import pandas as pd
 import geopandas as gpd
 from shapely.geometry import Polygon, Point

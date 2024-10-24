@@ -21,7 +21,7 @@ class GoogleBuildingMiner:
         Args:
             json_path (str): Path to the service account JSON file.
         """
-        self.autheticate(json_path)
+        self.authenticate(json_path)
     
     def fetch(self,lat=None,lon=None,radius=None,polygon=None):
         """

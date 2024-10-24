@@ -16,85 +16,64 @@
         <img src="https://img.shields.io/badge/Numba-Accelerated-green.svg?style=flat-square&logo=numba" alt="Numba">
         <img src="https://img.shields.io/badge/Selenium-Automated-informational.svg?style=flat-square&logo=selenium" alt="Selenium">
     </p>
-    <p><strong>MapMiner</strong> is geospatial tool designed to efficiently download and process the geospatial data and associated metadata from various sources. Leveraging powerful Python libraries like <strong>Selenium</strong>, <strong>Dask</strong>, <strong>Numba</strong>, and <strong>Xarray</strong>, MapMiner offers high-performance data retrieval and processing capabilities for geospatial analysis and visualization.</p><br>
+    <p><strong>MapMiner</strong> is a geospatial tool designed to efficiently download and process geospatial data and metadata from various sources. It leverages powerful Python libraries like <strong>Selenium</strong>, <strong>Dask</strong>, <strong>Numba</strong>, and <strong>Xarray</strong> to provide high-performance data retrieval and processing capabilities for geospatial analysis and visualization.</p><br>
     <h2>🚀 <strong>Key Features</strong></h2>
     <ul>
-        <li><strong>🌐 Selenium:</strong> Automated web interactions to extract metadata from various sources.</li>
-        <li><strong>⚙️ Dask:</strong> Distributed computing to manage large datasets and parallelize tasks.</li>
+        <li><strong>🌐 Selenium:</strong> Automated web interactions for metadata extraction.</li>
+        <li><strong>⚙️ Dask:</strong> Distributed computing to manage large datasets.</li>
         <li><strong>🚀 Numba:</strong> JIT compilation for accelerating numerical computations.</li>
-        <li><strong>📊 Xarray:</strong> Flexible data handling for multi-dimensional arrays, enabling seamless integration.</li>
-    </ul><br>
-    <h2>🛠 <strong>Installation</strong></h2>
-    <p>Ensure you have the necessary dependencies installed:</p>
-    <pre>
-    <code>git clone https://github.com/gajeshladhar/mapminer.git<br>
-    cd mapminer<br>
-    pip3 install .</code></pre>
+        <li><strong>📊 Xarray:</strong> Multi-dimensional array data handling for seamless integration.</li>
+    </ul><br><h2>📚 <strong>Supported Datasets</strong></h2>
+<p>MapMiner supports a variety of geospatial datasets across multiple categories:</p>
+<div>
+
+
+| Category                            | Datasets                                                                 |
+|-------------------------------------|--------------------------------------------------------------------------|
+| 🌍 **Satellite**                    | `Sentinel-2`, `Sentinel-1`, `MODIS`, `Landsat`                            |
+| 🚁 **Aerial**                       | `NAIP`                                                                   |
+| 🗺️ **Basemap**                      | `Google`, `ESRI`                                                         |
+| 📍 **Vectors**                      | `Google Building Footprint`, `OSM`                                        |
+| 🏔️ **DEM (Digital Elevation Model)** | `Copernicus DEM 30m`, `ALOS DEM`                                          |
+| 🌍 **LULC (Land Use Land Cover)**    | `ESRI LULC`                                                              |
+| 🌾 **Crop Layer**                   | `CDL Crop Mask`    
+
+
+
+<h2>🛠 <strong>Installation</strong></h2>
+<p>Ensure you have the necessary dependencies installed:</p>
+<pre><code class="highlight">git clone https://github.com/gajeshladhar/mapminer.git
+cd mapminer
+pip3 install .</code></pre>
     <h2>📝 <strong>Usage</strong></h2>
-    <p>MapMiner provides a streamlined API to fetch and process imagery and metadata:</p>
-    <h3><strong>1️⃣ Initialize the Miner</strong></h3>
-    <p>Start by creating an instance of the <code>GoogleMiner</code> class:</p>
-    <pre><code>from mapminer.miner import GoogleMiner
-miner = GoogleMiner()</code></pre>
-    <h3><strong>2️⃣ Fetch Imagery and Metadata</strong></h3>
-    <p>Specify a location using latitude, longitude, and radius, or define a bounding box (<code>bbox</code>), and fetch the corresponding data:</p>
-    <pre><code># Fetch imagery and metadata by location
-ds = miner.fetch(lat=40.748817, lon=-73.985428, radius=500)
-<br>
-# Alternatively, fetch by bounding box
-bbox = (-74.0, 40.7, -73.9, 40.8)
-ds = miner.fetch(bbox=bbox, resolution=1)
-<br>
-# Alternatively, fetch by shapely.geometry.Polygon
-ds = miner.fetch(polygon=polygon, resolution=1)</code></pre>
-    <h3><strong>3️⃣ Access the Data</strong></h3>
-    <p>The returned <code>xarray.Dataset</code> contains the imagery and associated metadata:</p>
-    <pre><code># Access the image data
-image_data = ds.data
-# Access the metadata
-metadata = ds.attrs['metadata']
-</code></pre>
-    <h2>⚙️ <strong>How It Works</strong></h2>
-    <p>MapMiner combines several powerful libraries to provide a seamless and efficient workflow:</p>
-    <ul>
-        <li><strong>Selenium</strong> automates the process of metadata extraction from varoius sources, taking screenshots and using OCR to extract relevant information.</li>
-        <li><strong>Dask</strong> manages large datasets, enabling parallelized downloads and computations, which is crucial for handling extensive basemap data.</li>
-        <li><strong>Numba</strong> is utilized to speed up computationally expensive tasks, ensuring that the processing is both fast and efficient.</li>
-        <li><strong>Xarray</strong> is used to handle the multi-dimensional array data, providing an intuitive interface for working with geospatial imagery and metadata.</li>
-    </ul>
-    <h2>🔧 <strong>Customization</strong></h2>
-    <p>MapMiner is highly customizable to suit various needs. You can modify the resolution, bounding box, and even the zoom level for Google Earth:</p>
-    <pre><code># Custom fetch with different zoom level and resolution
-ds = miner.fetch(lat=34.052235, lon=-118.243683, radius=1000, resolution=0.5)</code></pre>
-    <h2>🧪 <strong>Example</strong></h2>
-    <p>Below is an example of how to use MapMiner to download basemap tiles and retrieve metadata:</p>
-    <pre><code>from mapminer import GoogleMiner
-# Initialize the miner
-miner = GoogleMiner()
-# Fetch the data
-ds = miner.fetch(lat=51.5074, lon=-0.1278, radius=1000)
-# Access image data and metadata
-image = ds.data
-metadata = ds.attrs['metadata']
-# Output the date the image was captured
-print("Captured Date:", metadata['date']['value'])</code></pre>
+    <p>MapMiner provides multiple classes to fetch and process different types of geospatial data:</p>
+    <h3><strong>1️⃣ GoogleBaseMapMiner</strong></h3>
+    <pre><code>from mapminer.miner import GoogleBaseMapMiner
+miner = GoogleBaseMapMiner()
+ds = miner.fetch(lat=40.748817, lon=-73.985428, radius=500)</code></pre>
+    <h3><strong>2️⃣ CDLMiner</strong></h3>
+    <pre><code>from mapminer.miner import CDLMiner
+miner = CDLMiner()
+ds = miner.fetch(lon=-95.665, lat=39.8283, radius=10000, daterange="2024-01-01/2024-01-10")</code></pre>
+    <h3><strong>3️⃣ GoogleBuildingMiner</strong></h3>
+    <pre><code>from mapminer.miner import GoogleBuildingMiner
+miner = GoogleBuildingMiner()
+ds = miner.fetch(lat=34.052235, lon=-118.243683, radius=1000)</code></pre>
     <h2>🖼 <strong>Visualizing the Data</strong></h2>
-    <p>MapMiner outputs can be easily visualized using popular Python libraries like <code>matplotlib</code> or <code>hvplot</code>:</p>
-    <pre><code>import matplotlib.pyplot as plt
-# Visualize the fetched imagery
-plt.imshow(ds.data)
-plt.title(f"Captured on {metadata['date']['value']}")
-plt.show()</code></pre>
+    <p>You can easily visualize the data fetched using <code class="highlight">hvplot</code>:</p>
+    <pre><code>import hvplot.xarray
+ds.hvplot.image(title=f"Captured on {ds.attrs['metadata']['date']['value']}")</code></pre>
     <h2>📦 <strong>Dependencies</strong></h2>
-    <p>MapMiner relies on the following Python libraries:</p>
+    <p>MapMiner relies on several Python libraries:</p>
     <ul>
-        <li><strong>Selenium</strong>: For automated browser control.</li>
-        <li><strong>Dask</strong>: For distributed computing and handling large data.</li>
-        <li><strong>Numba</strong>: For speeding up numerical operations.</li>
-        <li><strong>Xarray</strong>: For handling multi-dimensional array data.</li>
-        <li><strong>EasyOCR</strong>: For extracting text from images.</li>
+        <li><strong class="important">Selenium:</strong> For automated browser control.</li>
+        <li><strong class="important">Dask:</strong> For distributed computing and handling large data.</li>
+        <li><strong class="important">Numba:</strong> For accelerating numerical operations.</li>
+        <li><strong class="important">Xarray:</strong> For handling multi-dimensional array data.</li>
+        <li><strong class="important">EasyOCR:</strong> For extracting text from images.</li>
+        <li><strong class="important">HvPlot:</strong> For visualizing xarray data.</li>
     </ul>
     <h2>🛠 <strong>Contributing</strong></h2>
-    <p>Contributions are welcome! Please fork this repository and submit pull requests. Make sure to include tests for any new features or bug fixes.</p>
+    <p>Contributions are welcome! Fork the repository and submit pull requests. Include tests for any new features or bug fixes.</p>
 </body>
 </html>

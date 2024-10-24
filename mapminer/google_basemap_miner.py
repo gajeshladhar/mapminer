@@ -9,7 +9,6 @@ import pandas as pd
 import xarray as xr
 
 from paddleocr import PaddleOCR
-import easyocr
 from shapely import Polygon, Point, box
 from rasterio.transform import from_bounds
 import dask
@@ -24,7 +23,7 @@ from selenium.webdriver.common.by import By
 import undetected_chromedriver as uc
 
 
-class GoogleMiner():
+class GoogleBaseMapMiner():
     """
     GoogleMiner is a tool for fetching and processing Google basemap imagery and metadata.
 
@@ -53,6 +52,7 @@ class GoogleMiner():
     
     def get_ocr_reader(self):
         if self.ocr=='easy':
+            import easyocr
             return easyocr.Reader(['en'])
         else : 
             return PaddleOCR(use_angle_cls=True, lang='en')

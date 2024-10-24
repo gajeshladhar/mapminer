@@ -20,3 +20,5 @@ paddlepaddle==2.6.1
 paddleocr==2.8.1
 rioxarray==0.15.3
 xee==0.0.9
+ipython==8.12.3
+geopandas==0.14.4

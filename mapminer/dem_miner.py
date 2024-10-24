@@ -124,7 +124,7 @@ if __name__ == '__main__':
     miner = DEMMiner()
     
     # Fetch dem data for a small area around a given point
-    ds = miner.fetch(Point(73.31452961, 28.01306571).buffer(1e-5))
+    ds = miner.fetch(polygon=Point(73.31452961, 28.01306571).buffer(1e-5))
     
     # Output the results
     print(ds)

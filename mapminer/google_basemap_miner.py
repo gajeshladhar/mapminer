@@ -356,3 +356,8 @@ class GoogleBaseMapMiner():
             }
         )
         return da
+    
+if __name__ == '__main__':
+    miner = GoogleBaseMapMiner()
+    ds = miner.fetch(lon=-95.665, lat=39.8283, radius=100)
+    print(ds)

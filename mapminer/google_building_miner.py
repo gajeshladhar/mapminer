@@ -57,13 +57,13 @@ class GoogleBuildingMiner:
         """
         if json_path is None:
             # Access keys using importlib.resources
-            with pkg_resources.path('mapminer.keys', 'secret_key.key') as key_path:
+            with pkg_resources.path('mapminer', 'keys/secret_key.key') as key_path:
                 key = open(key_path, 'rb').read()
             
             cipher = Fernet(key)
             
             # Decrypt the Google service account JSON file
-            with pkg_resources.path('mapminer.keys', 'google_service_account.json') as json_key_path:
+            with pkg_resources.path('mapminer', 'keys/google_service_account.json') as json_key_path:
                 encrypted_json = open(json_key_path, 'rb').read()
             
             decrypted_key = cipher.decrypt(encrypted_json)

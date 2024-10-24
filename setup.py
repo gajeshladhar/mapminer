@@ -13,7 +13,7 @@ with open('requirements.txt') as f:
 
 setup(
     name='mapminer',
-    version='0.1.0',
+    version='0.1.1',
     description='An advanced geospatial data extraction and processing toolkit for Earth observation datasets.',
     long_description=README,
     long_description_content_type='text/markdown',
@@ -34,7 +34,6 @@ setup(
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
         "Topic :: Software Development :: Libraries :: Python Modules",
-        "Topic :: Scientific/Engineering :: Earth Observation",
         "Topic :: Scientific/Engineering :: GIS",
         "Topic :: Scientific/Engineering :: Image Recognition",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",

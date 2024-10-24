@@ -22,3 +22,4 @@ rioxarray==0.15.3
 xee==0.0.9
 ipython==8.12.3
 geopandas==0.14.4
+geoviews==1.13.0

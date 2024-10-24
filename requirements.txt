@@ -19,3 +19,4 @@ planetary_computer==1.0.0
 paddlepaddle==2.6.1
 paddleocr==2.8.1
 rioxarray==0.15.3
+xee==0.0.9

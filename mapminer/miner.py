@@ -8,6 +8,7 @@ from .dem_miner import DEMMiner
 from .esri_lulc_miner import ESRILULCMiner
 from .esri_basemap_miner import ESRIBaseMapMiner
 from .naip_miner import NAIPMiner
+from .cdl_miner import CDLMiner
 
 if __name__=="__main__":
     miner = GoogleBaseMapMiner()

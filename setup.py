@@ -46,6 +46,7 @@ setup(
         'xarray', 'spatial analysis'
     ],
     packages=find_packages(),
+    include_package_data=True,  # Ensure package data (non-Python files) is included
     install_requires=requirements,
     python_requires='>=3.6',
     project_urls={

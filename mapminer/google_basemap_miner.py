@@ -53,8 +53,13 @@ class GoogleBaseMapMiner():
         print("Installing Google Chrome...")
         subprocess.run(['apt-get', 'update'], check=True)
         subprocess.run(['apt-get', 'install', '-y', 'wget', 'unzip', 'libvulkan1'], check=True)
-        subprocess.run(['wget', 'https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb'], check=True)
-        subprocess.run(['dpkg', '-i', 'google-chrome-stable_current_amd64.deb'], check=True)
+
+        # Download the Chrome .deb file to /tmp
+        chrome_deb_path = '/tmp/google-chrome-stable_current_amd64.deb'
+        subprocess.run(['wget', '-O', chrome_deb_path, 'https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb'], check=True)
+
+        # Install the Chrome .deb package
+        subprocess.run(['dpkg', '-i', chrome_deb_path], check=True)
         subprocess.run(['apt-get', '-f', 'install', '-y'], check=True)
 
         # Get the Chrome binary location

@@ -1,4 +1,5 @@
 import ee
+import os
 import json
 import numpy as np
 import pandas as pd
@@ -7,7 +8,6 @@ import geopandas as gpd
 from shapely.geometry import Polygon, Point
 import dask
 from cryptography.fernet import Fernet
-import importlib.resources as pkg_resources
 
 class GoogleBuildingMiner:
     """
@@ -53,24 +53,27 @@ class GoogleBuildingMiner:
         
         Args:
             json_path (str): Path to the service account JSON file. If not provided, 
-                            the method will use the encrypted key from the package's 'keys' folder.
+                            the method will use the encrypted key from the external 'keys' folder.
         """
+        # Get the absolute path of the 'keys' folder, assuming it's at the root level of the project
+        keys_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '.', 'keys'))
+
         if json_path is None:
-            # Access keys using importlib.resources
-            with pkg_resources.path('mapminer', 'keys/secret_key.key') as key_path:
-                key = open(key_path, 'rb').read()
-            
+            # Access secret_key.key and google_service_account.json from the separate 'keys' folder
+            secret_key_path = os.path.join(keys_dir, 'secret_key.key')
+            service_account_json_path = os.path.join(keys_dir, 'google_service_account.json')
+
+            key = open(secret_key_path, 'rb').read()
             cipher = Fernet(key)
-            
+
             # Decrypt the Google service account JSON file
-            with pkg_resources.path('mapminer', 'keys/google_service_account.json') as json_key_path:
-                encrypted_json = open(json_key_path, 'rb').read()
-            
+            encrypted_json = open(service_account_json_path, 'rb').read()
             decrypted_key = cipher.decrypt(encrypted_json)
             service_account_config = json.loads(decrypted_key)
         else:
             # Load service account configuration from the provided JSON path
-            service_account_config = json.load(open(json_path))
+            with open(json_path, 'r') as f:
+                service_account_config = json.load(f)
 
         # Authenticate with GEE using service account credentials
         credentials = ee.ServiceAccountCredentials(
@@ -78,6 +81,7 @@ class GoogleBuildingMiner:
             key_data=json.dumps(service_account_config)
         )
         ee.Initialize(credentials)
+        
     
     @dask.delayed
     def fetch_buildings(self, polygon: Polygon) -> gpd.GeoDataFrame:

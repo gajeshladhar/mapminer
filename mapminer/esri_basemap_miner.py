@@ -28,7 +28,7 @@ class ESRIBaseMapMiner:
         utm_crs = f"EPSG:{326 if lat >= 0 else 327}{utm_zone:02d}"  # Use EPSG:326XX for Northern Hemisphere, 327XX for Southern
         return utm_crs
 
-    def fetch(self, lat=None, lon=None, radius=None, polygon=None, resolution=1):
+    def fetch(self, lat=None, lon=None, radius=None, polygon=None, resolution=1.5):
         """
         Fetches the ESRI basemap imagery, reprojects it to UTM, and returns it as an xarray.DataArray with metadata.
 
@@ -55,7 +55,7 @@ class ESRIBaseMapMiner:
         data_array, capture_date = self._fetch_and_process_basemap(xmin_3857, ymin_3857, xmax_3857, ymax_3857, resolution)
 
         # Add the capture date to the DataArray's attributes
-        data_array.attrs['metadata'] = {'date': capture_date}
+        data_array.attrs['metadata'] = {'date':{'value': capture_date}}
         
         return data_array.rio.set_crs('epsg:3857')
 

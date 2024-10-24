@@ -49,8 +49,8 @@ class GoogleBaseMapMiner():
     
 
     def install_chrome(self):
-        # Install Google Chrome in Colab
-        print("Installing Google Chrome in Colab...")
+        # Install Google Chrome in System
+        print("Installing Google Chrome...")
         subprocess.run(['apt-get', 'update'], check=True)
         subprocess.run(['apt-get', 'install', '-y', 'wget', 'unzip', 'libvulkan1'], check=True)
         subprocess.run(['wget', 'https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb'], check=True)
@@ -89,7 +89,7 @@ class GoogleBaseMapMiner():
         # Try to find the Chrome binary path automatically
         chrome_path = find_chrome_path()
         
-        # If Chrome is not detected, install it in Colab
+        # If Chrome is not detected, install it in System
         if not chrome_path and platform.system() == "Linux":
             chrome_path = self.install_chrome()
 

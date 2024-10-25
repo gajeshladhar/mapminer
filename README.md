@@ -28,15 +28,16 @@
 <div>
 
 
-| Category                            | Datasets                                                                 |
-|-------------------------------------|--------------------------------------------------------------------------|
+| Category                            | Datasets                                                                  |
+|-------------------------------------|---------------------------------------------------------------------------|
 | 🌍 **Satellite**                    | `Sentinel-2`, `Sentinel-1`, `MODIS`, `Landsat`                            |
-| 🚁 **Aerial**                       | `NAIP`                                                                   |
-| 🗺️ **Basemap**                      | `Google`, `ESRI`                                                         |
+| 🚁 **Aerial**                       | `NAIP`                                                                    |
+| 🗺️ **Basemap**                      | `Google`, `ESRI`                                                          |
 | 📍 **Vectors**                      | `Google Building Footprint`, `OSM`                                        |
 | 🏔️ **DEM (Digital Elevation Model)** | `Copernicus DEM 30m`, `ALOS DEM`                                          |
-| 🌍 **LULC (Land Use Land Cover)**    | `ESRI LULC`                                                              |
-| 🌾 **Crop Layer**                   | `CDL Crop Mask`    
+| 🌍 **LULC (Land Use Land Cover)**    | `ESRI LULC`                                                               |
+| 🌾 **Crop Layer**                   | `CDL Crop Mask`                                                           |
+| 🕒 **Real-Time**                    | `Google Maps Real-Time Traffic`                                           |
 
 
 

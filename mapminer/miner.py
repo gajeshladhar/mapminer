@@ -10,6 +10,7 @@ from .esri_lulc_miner import ESRILULCMiner
 from .esri_basemap_miner import ESRIBaseMapMiner
 from .naip_miner import NAIPMiner
 from .cdl_miner import CDLMiner
+from .foursquare_miner import FourSquareMiner
 
 if __name__=="__main__":
     miner = GoogleBaseMapMiner()

@@ -73,7 +73,7 @@ class FourSquareMiner:
         """
         Update the parquet path based on the closest available date.
         """
-        fs = fsspec.filesystem('s3')
+        fs = fsspec.filesystem('s3', anon=True)
         s3_directory = 's3://fsq-os-places-us-east-1/release/'
         files = fs.ls(s3_directory)
         file_dates = [pd.to_datetime(f.split("dt=")[1]) for f in files]

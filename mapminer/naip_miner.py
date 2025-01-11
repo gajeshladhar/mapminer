@@ -17,7 +17,7 @@ class NAIPMiner:
         Initializes the NAIPMiner class with a Planetary Computer API key.
         """
         planetary_computer.settings.set_subscription_key("1d7ae9ea9d3843749757036a903ddb6c")  # Replace with your key
-        self.catalog_url = "https://earth-search.aws.element84.com/v1"
+        self.catalog_url = "https://stac-api.d2s.org"
         self.catalog = pystac_client.Client.open(self.catalog_url)
 
     def fetch(self, lat=None, lon=None, radius=None, polygon=None, daterange="2020-01-01/2021-01-01"):
@@ -66,9 +66,7 @@ class NAIPMiner:
 # Example usage:
 if __name__ == "__main__":
     naip_miner = NAIPMiner()
-    daterange = "2020-01-01/2021-01-01"
-    polygon = box(-100.75, 35.25, -100.5, 35.5)  # Example bounding box in Texas
-
-    # Fetch NAIP imagery for the specified polygon and date range
-    ds_naip = naip_miner.fetch(polygon=polygon, daterange=daterange)
+    lat,lon = 32.89370884,-97.18257253
+    radius = 200
+    ds_naip = naip_miner.fetch(lat,lon,radius)
     print(ds_naip)

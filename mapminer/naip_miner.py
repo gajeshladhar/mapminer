@@ -35,7 +35,7 @@ class NAIPMiner:
         """
         if polygon is None:
             # Create a polygon around the lat/lon with a given radius in kilometers
-            polygon = Point(lon, lat).buffer(radius* (111/1000))  # Convert radius from km to degrees
+            polygon = Point(lon, lat).buffer(radius/(111/1000))  # Convert radius from km to degrees
 
         # Convert the polygon to a bounding box
         bbox = polygon.bounds

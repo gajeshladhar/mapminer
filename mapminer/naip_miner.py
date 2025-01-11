@@ -3,6 +3,7 @@ import pystac_client
 import rioxarray
 from odc.stac import load
 import xarray as xr
+import pandas as pd
 from shapely.geometry import Polygon, Point, box
 
 
@@ -35,7 +36,7 @@ class NAIPMiner:
         """
         if polygon is None:
             # Create a polygon around the lat/lon with a given radius in kilometers
-            polygon = Point(lon, lat).buffer(radius/(111/1000))  # Convert radius from km to degrees
+            polygon = Point(lon, lat).buffer(radius/111/1000)  # Convert radius from km to degrees
 
         # Convert the polygon to a bounding box
         bbox = polygon.bounds
@@ -54,13 +55,15 @@ class NAIPMiner:
             raise ValueError("No NAIP data found for the given date range and bounding box.")
         
         # Load the data using odc.stac and Dask for lazy loading
-        ds_naip = load(
-            query_items,
-            bbox=bbox,
-            chunks={}
-        ).astype("float32").sortby('time', ascending=True)
-
-        return ds_naip
+        naip_date = str(pd.to_datetime(query_items[0].datetime)).split(" ")[0]
+        query = query_items[0]
+        ds = rioxarray.open_rasterio(query.assets["image"].href).sortby('y').sortby('x')
+        attrs = {'metadata':{'date': {'value': naip_date, 'confidence': 100}}}
+        ds = xr.DataArray(data=ds.data,dims=['band','y','x'],coords={
+            'band':['Red','Green','Blue','NIR'],
+            'y':ds.y.values,
+            'x':ds.x.values},attrs=attrs).rio.write_crs(ds.rio.crs)
+        return ds
 
 # Example usage:
 if __name__ == "__main__":

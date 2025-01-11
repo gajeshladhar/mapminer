@@ -17,8 +17,8 @@ class NAIPMiner:
         Initializes the NAIPMiner class with a Planetary Computer API key.
         """
         planetary_computer.settings.set_subscription_key("1d7ae9ea9d3843749757036a903ddb6c")  # Replace with your key
-        self.catalog_url = "https://planetarycomputer.microsoft.com/api/stac/v1"
-        self.catalog = pystac_client.Client.open(self.catalog_url, modifier=planetary_computer.sign_inplace)
+        self.catalog_url = "https://earth-search.aws.element84.com/v1"
+        self.catalog = pystac_client.Client.open(self.catalog_url)
 
     def fetch(self, lat=None, lon=None, radius=None, polygon=None, daterange="2020-01-01/2021-01-01"):
         """
@@ -55,15 +55,13 @@ class NAIPMiner:
             raise ValueError("No NAIP data found for the given date range and bounding box.")
         
         # Load the data using odc.stac and Dask for lazy loading
-        naip_date = str(pd.to_datetime(query_items[0].datetime)).split(" ")[0]
-        query = query_items[0]
-        ds = rioxarray.open_rasterio(query.assets["image"].href).sortby('y').sortby('x')
-        attrs = {'metadata':{'date': {'value': naip_date, 'confidence': 100}}}
-        ds = xr.DataArray(data=ds.data,dims=['band','y','x'],coords={
-            'band':['Red','Green','Blue','NIR'],
-            'y':ds.y.values,
-            'x':ds.x.values},attrs=attrs).rio.write_crs(ds.rio.crs)
-        return ds
+        ds_naip = load(
+            query_items,
+            bbox=bbox,
+            chunks={}
+        ).astype("float32").sortby('time', ascending=True)
+        
+        return ds_naip
 
 # Example usage:
 if __name__ == "__main__":

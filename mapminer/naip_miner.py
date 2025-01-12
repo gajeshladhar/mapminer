@@ -57,7 +57,7 @@ class NAIPMiner:
         naip_date = str(pd.to_datetime(query[0].datetime)).split(" ")[0]
         query = query[0]
         ds = rioxarray.open_rasterio(query.assets["image"].href,chunks={"x":1000,"y":1000}).sortby('y').sortby('x')
-        ds = ds.rio.clip(geometries=[gpd.GeoDataFrame([{'geometry':polygon}],crs='epsg:4326').to_crs(ds.rio.crs).iloc[0,-1]],drop=True)
+        ds = ds.rio.clip(geometries=[gpd.GeoDataFrame([{'geometry':box(*bbox)}],crs='epsg:4326').to_crs(ds.rio.crs).iloc[0,-1]],drop=True)
         attrs = {'metadata':{'date': {'value': naip_date, 'confidence': 100}}}
         ds = xr.DataArray(data=ds.data,dims=['band','y','x'],coords={
             'band':['Red','Green','Blue','NIR'],
@@ -71,5 +71,5 @@ if __name__ == "__main__":
     naip_miner = NAIPMiner()
     lat,lon = 32.89370884,-97.18257253
     radius = 200
-    ds_naip = naip_miner.fetch(lat,lon,radius)
+    ds_naip = naip_miner.fetch(lat,lon,radius).compute()
     print(ds_naip)

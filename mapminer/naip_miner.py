@@ -1,7 +1,10 @@
 import planetary_computer
 import pystac_client
+import numpy as np
 import geopandas as gpd
+from shapely import unary_union
 import rioxarray
+from rioxarray.merge import merge_arrays
 from odc.stac import load
 import xarray as xr
 import pandas as pd
@@ -54,22 +57,42 @@ class NAIPMiner:
         if len(query) == 0:
             raise ValueError("No NAIP data found for the given date range and bounding box.")
         
-        naip_date = str(pd.to_datetime(query[0].datetime)).split(" ")[0]
-        query = query[0]
-        ds = rioxarray.open_rasterio(query.assets["image"].href,chunks={"x":1000,"y":1000}).sortby('y').sortby('x')
-        ds = ds.rio.clip(geometries=[gpd.GeoDataFrame([{'geometry':box(*bbox)}],crs='epsg:4326').to_crs(ds.rio.crs).iloc[0,-1]],drop=True)
-        attrs = {'metadata':{'date': {'value': naip_date, 'confidence': 100}}}
-        ds = xr.DataArray(data=ds.data,dims=['band','y','x'],coords={
-            'band':['Red','Green','Blue','NIR'],
-            'y':ds.y.values,
-            'x':ds.x.values},attrs=attrs).rio.write_crs(ds.rio.crs)
+        collections = {}
+        for item in query:
+            ds = rioxarray.open_rasterio(
+                item.assets["image"].href, 
+                chunks={"x": 1000, "y": 1000}
+            )
+            ds = ds.rio.clip(
+                geometries=[box(*gpd.GeoDataFrame([{'geometry': box(*bbox)}], crs='epsg:4326')
+                            .to_crs(ds.rio.crs).iloc[0, -1].bounds)],
+                drop=True
+            )
+            naip_date = str(pd.to_datetime(item.datetime)).split(" ")[0]
+            if naip_date not in collections : 
+                collections[naip_date] = []
+            collection = {
+                'naip_date':naip_date,
+                'crs': ds.rio.crs, 
+                'polygon': box(*ds.rio.bounds()),
+                'ds':ds
+            }
+            collections[naip_date].append(collection) 
         
+        collections = sorted(
+                collections.items(),
+                key=lambda x: unary_union([d['polygon'] for d in x[1]]).area,
+                reverse=True
+            )
+        collection = collections[0]
+        ds =  merge_arrays([c['ds'] for c in collection[1]])
+        ds.attrs['metadata'] = {'date': {'value': collection[0], 'confidence': 100}}
         return ds
 
 # Example usage:
 if __name__ == "__main__":
     naip_miner = NAIPMiner()
-    lat,lon = 32.89370884,-97.18257253
-    radius = 200
-    ds_naip = naip_miner.fetch(lat,lon,radius).compute()
+    lat,lon = 33.88120789,-91.48968559
+    radius = 1000
+    ds_naip = naip_miner.fetch(lat,lon,radius,daterange='2021-01-01/2024-01-01')#.compute()
     print(ds_naip)

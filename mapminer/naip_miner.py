@@ -1,5 +1,6 @@
 import planetary_computer
 import pystac_client
+import geopandas as gpd
 import rioxarray
 from odc.stac import load
 import xarray as xr
@@ -48,20 +49,22 @@ class NAIPMiner:
             bbox=bbox,              # Bounding box of the AOI
             limit=100               # Limit to 100 results
         )
-        query_items = list(query.items())
-
+        query = list(query.items())
         # If no items found, raise an error
-        if len(query_items) == 0:
+        if len(query) == 0:
             raise ValueError("No NAIP data found for the given date range and bounding box.")
         
-        # Load the data using odc.stac and Dask for lazy loading
-        ds_naip = load(
-            query_items,
-            bbox=bbox,
-            chunks={}
-        ).astype("float32").sortby('time', ascending=True)
+        naip_date = str(pd.to_datetime(query[0].datetime)).split(" ")[0]
+        query = query[0]
+        ds = rioxarray.open_rasterio(query.assets["image"].href,chunks={"x":1000,"y":1000}).sortby('y').sortby('x')
+        ds = ds.rio.clip(geometries=[gpd.GeoDataFrame([{'geometry':polygon}],crs='epsg:4326').to_crs(ds.rio.crs).iloc[0,-1]],drop=True)
+        attrs = {'metadata':{'date': {'value': naip_date, 'confidence': 100}}}
+        ds = xr.DataArray(data=ds.data,dims=['band','y','x'],coords={
+            'band':['Red','Green','Blue','NIR'],
+            'y':ds.y.values,
+            'x':ds.x.values},attrs=attrs).rio.write_crs(ds.rio.crs)
         
-        return ds_naip
+        return ds
 
 # Example usage:
 if __name__ == "__main__":

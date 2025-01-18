@@ -168,7 +168,7 @@ class GoogleBaseMapMiner():
         return date,confidence
                 
     
-    def fetch(self,lat=None,lon=None,radius=None,bbox=None,polygon=None,resolution=1):
+    def fetch(self,lat=None,lon=None,radius=None,bbox=None,polygon=None,resolution=1,reproject=False):
         """
         Fetches basemap imagery and metadata for a given location or bounding box or Polygon.
 
@@ -190,11 +190,14 @@ class GoogleBaseMapMiner():
         else : 
             bbox = bbox
         
-        polygon = box(*bbox)
-        bbox = polygon.buffer(10*(1e-6)).bounds
-        ds,metadata = dask.compute(self.fetch_imagery(bbox,resolution),self.fetch_metadata(bbox,resolution))
-        utm_crs = self._get_utm_crs(polygon.centroid.y, polygon.centroid.x)
-        ds = ds.rio.reproject(utm_crs).rio.clip(geometries=[box(*gpd.GeoDataFrame([{'geometry':polygon}],crs='epsg:4326').to_crs(utm_crs).iloc[0,-1].bounds)],drop=True)
+        if reproject:
+            polygon = box(*bbox)
+            bbox = polygon.buffer(50*(1e-6)).bounds
+            ds,metadata = dask.compute(self.fetch_imagery(bbox,resolution),self.fetch_metadata(bbox,resolution))
+            utm_crs = self._get_utm_crs(polygon.centroid.y, polygon.centroid.x)
+            ds = ds.rio.reproject(utm_crs).rio.clip(geometries=[box(*gpd.GeoDataFrame([{'geometry':polygon}],crs='epsg:4326').to_crs(utm_crs).iloc[0,-1].bounds)],drop=True)
+        else : 
+            ds,metadata = dask.compute(self.fetch_imagery(bbox,resolution),self.fetch_metadata(bbox,resolution))
         ds.attrs['metadata'] = metadata
         return ds
     

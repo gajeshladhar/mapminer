@@ -3,6 +3,7 @@ from .google_traffic_miner import GoogleTrafficMiner
 from .google_building_miner import GoogleBuildingMiner
 from .osm_miner import OSMMiner
 from .landsat_miner import LandsatMiner
+from .modis_miner import MODISMiner
 from .sentinel1_miner import Sentinel1Miner
 from .sentinel2_miner import Sentinel2Miner
 from .dem_miner import DEMMiner

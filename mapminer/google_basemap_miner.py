@@ -5,8 +5,10 @@ from PIL import Image
 import io
 from io import BytesIO
 import numpy as np
+import geopandas as gpd
 import pandas as pd
 import xarray as xr
+import rioxarray
 
 from paddleocr import PaddleOCR
 from shapely import Polygon, Point, box
@@ -187,8 +189,12 @@ class GoogleBaseMapMiner():
             bbox = Point(lon,lat).buffer(radius/111/1000).bounds
         else : 
             bbox = bbox
-            
+        
+        polygon = box(*bbox)
+        bbox = polygon.buffer(10*(1e-6)).bounds
         ds,metadata = dask.compute(self.fetch_imagery(bbox,resolution),self.fetch_metadata(bbox,resolution))
+        utm_crs = self._get_utm_crs(polygon.centroid.y, polygon.centroid.x)
+        ds = ds.rio.reproject(utm_crs).rio.clip(geometries=[box(*gpd.GeoDataFrame([{'geometry':polygon}],crs='epsg:4326').to_crs(utm_crs).iloc[0,-1].bounds)],drop=True)
         ds.attrs['metadata'] = metadata
         return ds
     
@@ -357,7 +363,27 @@ class GoogleBaseMapMiner():
         )
         return da
     
+    def _get_utm_crs(self, lat, lon):
+        """
+        Determines the appropriate UTM CRS based on the latitude and longitude.
+        
+        Parameters:
+        - lat (float): Latitude of the location.
+        - lon (float): Longitude of the location.
+        
+        Returns:
+        - str: The EPSG code for the local UTM CRS.
+        """
+        # Calculate the UTM zone based on longitude
+        utm_zone = int((lon + 180) // 6) + 1
+        
+        # Determine the EPSG code for the northern or southern hemisphere
+        if lat >= 0:
+            return f"EPSG:326{utm_zone:02d}"  # Northern hemisphere UTM (EPSG:326XX)
+        else:
+            return f"EPSG:327{utm_zone:02d}"  # Southern hemisphere UTM (EPSG:327XX)
+    
 if __name__ == '__main__':
     miner = GoogleBaseMapMiner()
-    ds = miner.fetch(lon=-95.665, lat=39.8283, radius=100)
-    print(ds)
+    ds = miner.fetch(lat=28.46431811,lon=76.9687667, radius=100)
+    ds.rio.to_raster("datahdjdd.tif")

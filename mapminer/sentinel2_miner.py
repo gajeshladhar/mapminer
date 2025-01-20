@@ -33,10 +33,11 @@ class Sentinel2Miner:
         """
         if polygon is None : 
             polygon = Point(lon,lat).buffer(radius/111/1000)
-        ds_sentinel = self.fetch_imagery(daterange, polygon.bounds, merge_nodata)
+        utm_crs = self._get_utm_crs(polygon.centroid.y, polygon.centroid.x)
+        ds_sentinel = self.fetch_imagery(daterange, polygon.bounds, merge_nodata,crs=utm_crs)
         return ds_sentinel
 
-    def fetch_imagery(self, daterange, bbox, merge_nodata=False):
+    def fetch_imagery(self, daterange, bbox, merge_nodata=False,crs=None):
         """
         Returns Dask Datacube of Sentinel-2 based on the provided bounding box and date range (Lazy Loading).
         
@@ -57,12 +58,32 @@ class Sentinel2Miner:
         query = list(query.items())
 
         # Load the dataset (grouping by solar day)
-        ds_sentinel = load(query, bbox=bbox, groupby="solar_day", chunks={}).astype("float32").sortby('time', ascending=True)
+        ds_sentinel = load(query, bbox=bbox, groupby="solar_day", crs=crs,chunks={}).astype("float32").sortby('time', ascending=True)
 
         if merge_nodata:
             ds_sentinel = self._merge_nodata(ds_sentinel)
         
         return ds_sentinel
+
+    def _get_utm_crs(self, lat, lon):
+        """
+        Determines the appropriate UTM CRS based on the latitude and longitude.
+        
+        Parameters:
+        - lat (float): Latitude of the location.
+        - lon (float): Longitude of the location.
+        
+        Returns:
+        - str: The EPSG code for the local UTM CRS.
+        """
+        # Calculate the UTM zone based on longitude
+        utm_zone = int((lon + 180) // 6) + 1
+        
+        # Determine the EPSG code for the northern or southern hemisphere
+        if lat >= 0:
+            return f"EPSG:326{utm_zone:02d}"  # Northern hemisphere UTM (EPSG:326XX)
+        else:
+            return f"EPSG:327{utm_zone:02d}"  # Southern hemisphere UTM (EPSG:327XX)
 
     def _merge_nodata(self, ds_sentinel):
         """

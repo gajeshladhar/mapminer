@@ -1,5 +1,5 @@
 requests==2.32.3
-dask==2023.6.0
+dask==2025.1.0
 easyocr==1.7.1
 mercantile==1.2.1
 numpy==1.24.0

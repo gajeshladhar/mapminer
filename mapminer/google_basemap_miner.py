@@ -50,21 +50,24 @@ class GoogleBaseMapMiner():
         clear_output()
     
 
-    def install_chromium(self):
-        # Install Chromium in System
-        print("Installing Chromium...")
-        
-        # Update the package list
+    def install_chrome(self):
+        # Install Google Chrome in System
+        print("Installing Google Chrome...")
         subprocess.run(['apt-get', 'update'], check=True)
+        subprocess.run(['apt-get', 'install', '-y', 'wget', 'unzip', 'libvulkan1'], check=True)
 
-        # Install Chromium and necessary dependencies
-        subprocess.run(['apt-get', 'install', '-y', 'chromium-browser', 'unzip', 'libvulkan1'], check=True)
+        # Download the Chrome .deb file to /tmp
+        chrome_deb_path = '/tmp/google-chrome-stable_current_amd64.deb'
+        subprocess.run(['wget', '-O', chrome_deb_path, 'https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb'], check=True)
 
-        # Get the Chromium binary location
-        chromium_path = subprocess.check_output(['which', 'chromium-browser']).decode('utf-8').strip()
-        print(f"Chromium installed at: {chromium_path}")
-        
-        return chromium_path
+        # Install the Chrome .deb package
+        subprocess.run(['dpkg', '-i', chrome_deb_path], check=True)
+        subprocess.run(['apt-get', '-f', 'install', '-y'], check=True)
+
+        # Get the Chrome binary location
+        chrome_path = subprocess.check_output(['which', 'google-chrome']).decode('utf-8').strip()
+        print(f"Google Chrome installed at: {chrome_path}")
+        return chrome_path
 
     def get_driver(self):
         chrome_options = Options()
@@ -95,7 +98,7 @@ class GoogleBaseMapMiner():
         
         # If Chrome is not detected, install it in System
         if not chrome_path and platform.system() == "Linux":
-            chrome_path = self.install_chromium()
+            chrome_path = self.install_chrome()
 
         # If still not detected, raise an error
         if not chrome_path:

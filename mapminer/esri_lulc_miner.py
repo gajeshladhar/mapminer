@@ -65,7 +65,7 @@ class ESRILULCMiner:
 # Example usage:
 if __name__ == "__main__":
     lulc_miner = ESRILULCMiner()
-    daterange = "2024-01-01/2024-12-31"  # Specify the year you want to fetch data for
+    daterange = "2023-01-01/2023-12-31"  # Specify the year you want to fetch data for
     polygon = box(-100.75, 35.25, -100.5, 35.5)  # Example bounding box (in degrees)
 
     # Fetch LULC data for the specified polygon and date range

@@ -109,7 +109,7 @@ class GoogleBaseMapMiner():
         chrome_options.binary_location = chrome_path
         
         # Define a safe path for undetected_chromedriver's data
-        safe_data_path = Path.home() / ".undetected_chromedriver_data"
+        safe_data_path = Path.cwd() / ".undetected_chromedriver_data"
         safe_data_path.mkdir(parents=True, exist_ok=True)
         # Initialize undetected_chromedriver with options
         driver = uc.Chrome(options=chrome_options,user_data_dir=str(safe_data_path))

@@ -9,8 +9,6 @@ import geopandas as gpd
 import pandas as pd
 import xarray as xr
 import rioxarray
-from pathlib import Path
-import tempfile
 
 from paddleocr import PaddleOCR
 from shapely import Polygon, Point, box
@@ -108,11 +106,9 @@ class GoogleBaseMapMiner():
         
         # Set the Chrome binary location
         chrome_options.binary_location = chrome_path
+        
         # Initialize undetected_chromedriver with options
-        with tempfile.TemporaryDirectory() as tmpdirname:
-            from undetected_chromedriver.patcher import Patcher
-            Patcher.data_path = os.path.abspath(tmpdirname)
-            driver = uc.Chrome(options=chrome_options, user_data_dir=tmpdirname)
+        driver = uc.Chrome(options=chrome_options)
         return driver
 
     

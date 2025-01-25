@@ -27,6 +27,7 @@ import tempfile
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.core.driver_cache import DriverCacheManager
 
 import shutil
 import platform
@@ -120,7 +121,7 @@ class GoogleBaseMapMiner():
         # Set the Chrome binary location
         chrome_options.binary_location = chrome_path
         
-        service = Service(ChromeDriverManager().install())
+        service = Service(ChromeDriverManager(cache_manager=DriverCacheManager(root_dir=f'{tempfile.mkdtemp()}')).install())
         # Initialize the WebDriver
         driver = webdriver.Chrome(service=service, options=chrome_options)
         return driver
@@ -260,7 +261,7 @@ class GoogleBaseMapMiner():
             self.image = image
             data = np.array(image)
             ds = xr.DataArray(data=data,dims=['y','x','band'],coords={'band':[0,1,2],'y':range(data.shape[0]),'x':range(data.shape[1])})
-            data = data[int(data.shape[0]*0.940):,int(data.shape[1]*0.05):int(data.shape[1]*0.48)]
+            data = data[int(data.shape[0]*0.947):,int(data.shape[1]*0.05):int(data.shape[1]*0.48)]
             try : 
                 date,confidence = self.read_text_paddle(data) if self.ocr=='paddle' else self.read_text_easy(data)
             except : 

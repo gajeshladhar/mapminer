@@ -58,7 +58,7 @@ class Sentinel2Miner:
         query = list(query.items())
 
         # Load the dataset (grouping by solar day)
-        ds_sentinel = load(query, bbox=bbox, groupby="solar_day", crs=crs,chunks={}).astype("float32").sortby('time', ascending=True)
+        ds_sentinel = load(query, bbox=bbox, groupby="solar_day", crs=crs,resolution=10,chunks={}).astype("float32").sortby('time', ascending=True)
 
         if merge_nodata:
             ds_sentinel = self._merge_nodata(ds_sentinel)

@@ -23,6 +23,10 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 import undetected_chromedriver as uc
+import tempfile
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
 
 import shutil
 import platform
@@ -71,10 +75,19 @@ class GoogleBaseMapMiner():
 
     def get_driver(self):
         chrome_options = Options()
-        chrome_options.add_argument("--headless")
-        chrome_options.add_argument("--disable-gpu")
-        chrome_options.add_argument("--no-sandbox")
-
+        chrome_options.add_argument("--headless")  # Run without a UI
+        chrome_options.add_argument("--disable-gpu")  # Disable GPU usage
+        chrome_options.add_argument("--no-sandbox")  # Disable the sandbox for simplicity
+        chrome_options.add_argument("--disable-dev-shm-usage")  # Use disk-based shared memory
+        chrome_options.add_argument("--disable-extensions")  # Disable extensions to reduce overhead
+        chrome_options.add_argument("--disable-crash-reporter")  # Disable crash reporter
+        chrome_options.add_argument("--disable-in-process-stack-traces")  # Disable in-process stack traces
+        chrome_options.add_argument("--disable-logging")  # Disable logging
+        chrome_options.add_argument("--log-level=3")  # Suppress logs
+        chrome_options.add_argument("--output=/dev/null")  # Suppress logs
+        chrome_options.add_argument(f"--user-data-dir={tempfile.mkdtemp()}")
+        chrome_options.add_argument("--window-size=1280,720")  # Full HD resolution
+        
         # Function to detect Chrome binary path based on platform
         def find_chrome_path():
             system_platform = platform.system()
@@ -107,8 +120,9 @@ class GoogleBaseMapMiner():
         # Set the Chrome binary location
         chrome_options.binary_location = chrome_path
         
-        # Initialize undetected_chromedriver with options
-        driver = uc.Chrome(options=chrome_options)
+        service = Service(ChromeDriverManager().install())
+        # Initialize the WebDriver
+        driver = webdriver.Chrome(service=service, options=chrome_options)
         return driver
 
     
@@ -389,4 +403,4 @@ class GoogleBaseMapMiner():
 if __name__ == '__main__':
     miner = GoogleBaseMapMiner()
     ds = miner.fetch(lat=28.46431811,lon=76.9687667, radius=100)
-    ds.rio.to_raster("datahdjdd.tif")
+    print(ds.attrs)

@@ -45,12 +45,12 @@ class GoogleBaseMapMiner():
     - Generate Google Earth URLs based on coordinates.
     """
     
-    def __init__(self,ocr='paddle'):
+    def __init__(self,ocr='paddle',install_chrome=True):
         """
         Initializes the GoogleMiner with headless Chrome for web scraping and an OCR reader.
         """
         self.ocr = ocr
-        self.driver = self.get_driver()
+        self.driver = self.get_driver(install_chrome)
         self.reader = self.get_ocr_reader()
         clear_output()
     
@@ -74,7 +74,7 @@ class GoogleBaseMapMiner():
         print(f"Google Chrome installed at: {chrome_path}")
         return chrome_path
 
-    def get_driver(self):
+    def get_driver(self,install_chrome):
         chrome_options = Options()
         chrome_options.add_argument("--headless")  # Run without a UI
         chrome_options.add_argument("--disable-gpu")  # Disable GPU usage
@@ -111,19 +111,9 @@ class GoogleBaseMapMiner():
         chrome_path = find_chrome_path()
         
         # If Chrome is not detected, install it in System
-        if not chrome_path and platform.system() == "Linux":
+        if (not chrome_path and platform.system() == "Linux") and install_chrome:
             chrome_path = self.install_chrome()
-
-        # If still not detected, raise an error
-        if not chrome_path:
-            raise FileNotFoundError("Chrome binary not found. Please install Google Chrome or specify the path manually.")
-        
-        # Set the Chrome binary location
-        chrome_options.binary_location = chrome_path
-        
-        service = Service(ChromeDriverManager(cache_manager=DriverCacheManager(root_dir=f'{tempfile.mkdtemp()}')).install())
-        # Initialize the WebDriver
-        driver = webdriver.Chrome(service=service, options=chrome_options)
+        driver = webdriver.Chrome(options=chrome_options)
         return driver
 
     

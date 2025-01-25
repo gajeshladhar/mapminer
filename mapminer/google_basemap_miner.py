@@ -86,7 +86,7 @@ class GoogleBaseMapMiner():
         chrome_options.add_argument("--disable-logging")  # Disable logging
         chrome_options.add_argument("--log-level=3")  # Suppress logs
         chrome_options.add_argument("--output=/dev/null")  # Suppress logs
-        chrome_options.add_argument(f"--user-data-dir={tempfile.mkdtemp()}")
+        #chrome_options.add_argument(f"--user-data-dir={tempfile.mkdtemp()}")
         chrome_options.add_argument("--window-size=1280,720")  # Full HD resolution
         
         # Function to detect Chrome binary path based on platform

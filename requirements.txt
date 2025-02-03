@@ -15,6 +15,7 @@ hvplot==0.9.1
 cryptography==41.0.3
 odc-stac==0.3.11
 pystac_client==0.7.2
+pystac==1.9.0
 planetary_computer==1.0.0
 paddlepaddle==2.6.1
 paddleocr==2.8.1

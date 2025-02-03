@@ -51,7 +51,7 @@ class ESRIBaseMapMiner:
             bbox = bbox
         
         polygon = box(*bbox)
-        bbox = polygon.buffer(800*(1e-6)).bounds
+        bbox = polygon.buffer(80*(1e-5)).bounds
         xmin, ymin, xmax, ymax = bbox
         # Reproject the bounding box coordinates to EPSG:3857 (Web Mercator)
         xmin_3857, ymin_3857 = self._transform_wgs_to_mercator(xmin, ymin)

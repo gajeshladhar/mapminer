@@ -197,7 +197,7 @@ class GoogleBaseMapMiner():
         
         if reproject:
             polygon = box(*bbox)
-            bbox = polygon.buffer(50*(1e-6)).bounds
+            bbox = polygon.buffer(80*(1e-5)).bounds
             ds,metadata = dask.compute(self.fetch_imagery(bbox,resolution),self.fetch_metadata(bbox,resolution))
             utm_crs = self._get_utm_crs(polygon.centroid.y, polygon.centroid.x)
             ds = ds.rio.reproject(utm_crs).rio.clip(geometries=[box(*gpd.GeoDataFrame([{'geometry':polygon}],crs='epsg:4326').to_crs(utm_crs).iloc[0,-1].bounds)],drop=True)

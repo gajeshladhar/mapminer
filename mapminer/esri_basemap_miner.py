@@ -1,10 +1,11 @@
 import requests
 import numpy as np
+import pandas as pd
 import xarray as xr
 import rioxarray
 from PIL import Image
 from io import BytesIO
-from shapely.geometry import Point
+from shapely.geometry import Point, box, Polygon
 import geopandas as gpd
 
 
@@ -28,7 +29,7 @@ class ESRIBaseMapMiner:
         utm_crs = f"EPSG:{326 if lat >= 0 else 327}{utm_zone:02d}"  # Use EPSG:326XX for Northern Hemisphere, 327XX for Southern
         return utm_crs
 
-    def fetch(self, lat=None, lon=None, radius=None, polygon=None, resolution=1.5):
+    def fetch(self, lat=None, lon=None, radius=None, polygon=None, resolution=1.0,reproject=False):
         """
         Fetches the ESRI basemap imagery, reprojects it to UTM, and returns it as an xarray.DataArray with metadata.
 
@@ -42,22 +43,36 @@ class ESRIBaseMapMiner:
         Returns:
         - xarray.DataArray: The basemap imagery with capture date stored in attributes.
         """
-        if polygon is None:
-            # Create a bounding box around the point (lat, lon) using radius
-            polygon = Point(lon, lat).buffer(radius / 111320)  # Approx conversion to degrees
-        xmin, ymin, xmax, ymax = polygon.bounds
-
+        if polygon is not None : 
+            bbox = polygon.bounds
+        elif radius is not None : 
+            bbox = Point(lon,lat).buffer(radius/111/1000).bounds
+        else : 
+            bbox = bbox
+        
+        polygon = box(*bbox)
+        bbox = polygon.buffer(800*(1e-6)).bounds
+        xmin, ymin, xmax, ymax = bbox
         # Reproject the bounding box coordinates to EPSG:3857 (Web Mercator)
         xmin_3857, ymin_3857 = self._transform_wgs_to_mercator(xmin, ymin)
         xmax_3857, ymax_3857 = self._transform_wgs_to_mercator(xmax, ymax)
-
-        # Fetch basemap data and capture metadata
-        data_array, capture_date = self._fetch_and_process_basemap(xmin_3857, ymin_3857, xmax_3857, ymax_3857, resolution)
-
-        # Add the capture date to the DataArray's attributes
-        data_array.attrs['metadata'] = {'date':{'value': capture_date}}
         
-        return data_array.rio.set_crs('epsg:3857')
+        # Fetch basemap data and capture metadata
+        ds, capture_date = self._fetch_and_process_basemap(xmin_3857, ymin_3857, xmax_3857, ymax_3857, resolution)
+        ds = ds.transpose('band', 'y', 'x')
+        # Add the capture date to the DataArray's attributes
+        ds.attrs['metadata'] = {'date':{'value': str(pd.to_datetime(capture_date).date())}}
+        ds = ds.rio.write_crs("epsg:3857")
+            
+        if reproject:
+            utm_crs = self._get_utm_crs(lat=polygon.centroid.y, lon=polygon.centroid.x)
+            print(utm_crs)
+            ds = ds.rio.reproject(utm_crs).rio.clip(geometries=[box(*gpd.GeoDataFrame([{'geometry':polygon}],crs='epsg:4326').to_crs(utm_crs).iloc[0,-1].bounds)],drop=True)
+        else : 
+            ds = ds.rio.clip(geometries=[box(*gpd.GeoDataFrame([{'geometry':polygon}],crs='epsg:4326').to_crs("epsg:3857").iloc[0,-1].bounds)],drop=True)
+        
+        return ds
+
 
     def _transform_wgs_to_mercator(self, lon, lat):
         """
@@ -94,7 +109,6 @@ class ESRIBaseMapMiner:
 
         # Load the image
         image = Image.open(BytesIO(response.content))
-
         if image.mode != 'RGB':
             image = image.convert('RGB')
 
@@ -106,7 +120,7 @@ class ESRIBaseMapMiner:
 
         # Create xarray DataArray with Web Mercator coordinates
         x_coords = np.linspace(xmin_merc, xmax_merc, image_array.shape[1])
-        y_coords = np.linspace(ymin_merc, ymax_merc, image_array.shape[0])
+        y_coords = np.linspace(ymax_merc, ymin_merc, image_array.shape[0])
         data_array = xr.DataArray(image_array, coords=[y_coords, x_coords, ['R', 'G', 'B']], dims=["y", "x", "band"])
 
         return data_array, capture_date
@@ -147,3 +161,11 @@ class ESRIBaseMapMiner:
             raise Exception("No capture date found in the response")
 
         return capture_date
+    
+    
+    
+if __name__ == '__main__':
+    miner = ESRIBaseMapMiner()
+    ds = miner.fetch(lat=28.46431811,lon=76.9687667, radius=500,reproject=True)
+    ds.rio.to_raster("dummy0112.tif")
+    print(ds)

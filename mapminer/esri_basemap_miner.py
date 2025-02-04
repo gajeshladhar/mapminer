@@ -66,7 +66,6 @@ class ESRIBaseMapMiner:
             
         if reproject:
             utm_crs = self._get_utm_crs(lat=polygon.centroid.y, lon=polygon.centroid.x)
-            print(utm_crs)
             ds = ds.rio.reproject(utm_crs).rio.clip(geometries=[box(*gpd.GeoDataFrame([{'geometry':polygon}],crs='epsg:4326').to_crs(utm_crs).iloc[0,-1].bounds)],drop=True)
         else : 
             ds = ds.rio.clip(geometries=[box(*gpd.GeoDataFrame([{'geometry':polygon}],crs='epsg:4326').to_crs("epsg:3857").iloc[0,-1].bounds)],drop=True)

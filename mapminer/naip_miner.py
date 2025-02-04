@@ -23,8 +23,16 @@ class NAIPMiner:
         planetary_computer.settings.set_subscription_key("1d7ae9ea9d3843749757036a903ddb6c")  # Replace with your key
         self.catalog_url = "https://stac-api.d2s.org"
         self.catalog = pystac_client.Client.open(self.catalog_url)
+        
+    def _get_utm_crs(self, lon, lat):
+        """
+        Determines the UTM CRS (EPSG code) based on the provided longitude and latitude.
+        """
+        utm_zone = int((lon + 180) / 6) + 1
+        utm_crs = f"EPSG:{326 if lat >= 0 else 327}{utm_zone:02d}"  # Use EPSG:326XX for Northern Hemisphere, 327XX for Southern
+        return utm_crs
 
-    def fetch(self, lat=None, lon=None, radius=None, polygon=None, daterange="2020-01-01/2021-01-01"):
+    def fetch(self, lat=None, lon=None, radius=None, polygon=None, daterange="2020-01-01/2021-01-01",reproject=False):
         """
         Fetches NAIP imagery for a given date range and bounding box or polygon.
         
@@ -43,8 +51,8 @@ class NAIPMiner:
             polygon = Point(lon, lat).buffer(radius/111/1000)  # Convert radius from km to degrees
 
         # Convert the polygon to a bounding box
-        bbox = polygon.bounds
-
+        bbox = polygon.buffer(80*(1e-5)).bounds
+            
         # Search the Planetary Computer for NAIP imagery
         query = self.catalog.search(
             collections=["naip"],   # NAIP Collection
@@ -87,6 +95,13 @@ class NAIPMiner:
         collection = collections[0]
         ds =  merge_arrays([c['ds'] for c in collection[1]])
         ds.attrs['metadata'] = {'date': {'value': collection[0], 'confidence': 100}}
+        
+        if reproject:
+            utm_crs = self._get_utm_crs(lat=polygon.centroid.y, lon=polygon.centroid.x)
+            ds = ds.rio.reproject(utm_crs).rio.clip(geometries=[box(*gpd.GeoDataFrame([{'geometry':polygon}],crs='epsg:4326').to_crs(utm_crs).iloc[0,-1].bounds)],drop=True)
+        else : 
+            ds = ds.rio.clip(geometries=[box(*gpd.GeoDataFrame([{'geometry':polygon}],crs='epsg:4326').to_crs(ds.rio.crs).iloc[0,-1].bounds)],drop=True)
+        
         return ds
 
 # Example usage:
@@ -94,5 +109,5 @@ if __name__ == "__main__":
     naip_miner = NAIPMiner()
     lat,lon = 33.88120789,-91.48968559
     radius = 1000
-    ds_naip = naip_miner.fetch(lat,lon,radius,daterange='2021-01-01/2024-01-01')#.compute()
+    ds_naip = naip_miner.fetch(lat,lon,radius,daterange='2021-01-01/2024-01-01',reproject=True).compute()
     print(ds_naip)

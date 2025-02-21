@@ -11,7 +11,7 @@ selenium==4.23.1
 undetected_chromedriver==3.5.5
 Shapely==2.0.6
 xarray==2024.2.0
-hvplot==0.9.1
+hvplot
 cryptography==41.0.3
 odc-stac==0.3.11
 pystac_client==0.7.2
@@ -21,7 +21,7 @@ paddlepaddle==2.6.1
 paddleocr==2.8.1
 rioxarray==0.15.0
 xee==0.0.9
-ipython==8.12.3
+ipython
 geopandas==0.14.4
 geoviews==1.13.0
 fsspec==2024.3.1

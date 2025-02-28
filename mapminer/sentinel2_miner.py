@@ -24,11 +24,11 @@ class Sentinel2Miner:
         """
         Initializes the Sentinel2Miner class with a Planetary Computer API key.
         """
-        engine = self.available_engines.get(engine)
         planetary_computer.settings.set_subscription_key("1d7ae9ea9d3843749757036a903ddb6c")
+        self.catalog = Client.open("https://planetarycomputer.microsoft.com/api/stac/v1",modifier=planetary_computer.sign_inplace)
+        engine = self.available_engines.get(engine)
         self.catalog_url = engine["catalog_url"]
         self.collection = engine["collection"]
-        self.catalog = Client.open(self.catalog_url, modifier=planetary_computer.sign_inplace)
 
     def fetch(self,lat=None,lon=None,radius=None,polygon=None,daterange="2024-01-01/2024-01-10",merge_nodata=False):
         """

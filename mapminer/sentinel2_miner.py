@@ -10,13 +10,24 @@ class Sentinel2Miner:
     """
     A class for fetching and processing Sentinel-2 imagery from Microsoft's Planetary Computer.
     """
-    
-    def __init__(self):
+    available_engines = {
+        "planetary_computer": {
+            "catalog_url": "https://planetarycomputer.microsoft.com/api/stac/v1",
+            "collection": "sentinel-2-l2a"
+        },
+        "copernicus": {
+            "catalog_url": "https://stac.dataspace.copernicus.eu/v1",
+            "collection": "sentinel-2-l2a"
+        },
+    }
+    def __init__(self,engine="planetary_computer"):
         """
         Initializes the Sentinel2Miner class with a Planetary Computer API key.
         """
+        engine = self.available_engines.get(engine)
         planetary_computer.settings.set_subscription_key("1d7ae9ea9d3843749757036a903ddb6c")
-        self.catalog_url = "https://planetarycomputer.microsoft.com/api/stac/v1"
+        self.catalog_url = engine["catalog_url"]
+        self.collection = engine["collection"]
         self.catalog = Client.open(self.catalog_url, modifier=planetary_computer.sign_inplace)
 
     def fetch(self,lat=None,lon=None,radius=None,polygon=None,daterange="2024-01-01/2024-01-10",merge_nodata=False):
@@ -50,7 +61,7 @@ class Sentinel2Miner:
         - xarray.Dataset: Sentinel-2 dataset.
         """
         query = self.catalog.search(
-            collections=["sentinel-2-l2a"],
+            collections=[self.collection],
             datetime=daterange,
             limit=100,
             bbox=bbox
@@ -118,9 +129,9 @@ class Sentinel2Miner:
 
 
 if __name__=="__main__":
-    miner = Sentinel2Miner()
+    miner = Sentinel2Miner(engine='copernicus')
     daterange = "2024-01-01/2024-01-10"
     polygon = box(*[77.1025, 28.7041, 77.4125, 28.8541])  # Bounding box for New Delhi
     # Fetch the dataset with nodata merging enabled
-    ds_sentinel = miner.fetch(daterange, polygon = polygon, merge_nodata=True)
+    ds_sentinel = miner.fetch(daterange, polygon = polygon, merge_nodata=False)
     print(ds_sentinel)

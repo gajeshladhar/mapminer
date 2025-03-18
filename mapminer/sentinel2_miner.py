@@ -24,8 +24,15 @@ class Sentinel2Miner:
         """
         Initializes the Sentinel2Miner class with a Planetary Computer API key.
         """
+        import requests
+        session = requests.Session()
+        original_request = session.request
+        def request_with_timeout(method, url, **kwargs):
+            kwargs.setdefault("timeout", 60)
+            return original_request(method, url, **kwargs)
+        session.request = request_with_timeout
         planetary_computer.settings.set_subscription_key("1d7ae9ea9d3843749757036a903ddb6c")
-        self.catalog = Client.open("https://planetarycomputer.microsoft.com/api/stac/v1",modifier=planetary_computer.sign_inplace)
+        self.catalog = Client.open("https://planetarycomputer.microsoft.com/api/stac/v1", modifier=planetary_computer.sign_inplace, session=session)
         engine = self.available_engines.get(engine)
         self.catalog_url = engine["catalog_url"]
         self.collection = engine["collection"]

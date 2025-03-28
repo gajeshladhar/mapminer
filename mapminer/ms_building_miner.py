@@ -57,6 +57,7 @@ class MSBuildingMiner:
         
         dfs = dask.compute(*[self.fetch_buildings(url,polygon) for url in urls],scheduler='threads')
         df = pd.concat(dfs)
+        df['confidence'] = df.properties.apply(lambda properties : properties['confidence'] if 'confidence' in properties else 1.0).values
         return df
     
     @dask.delayed

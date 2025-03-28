@@ -1,6 +1,7 @@
 from .google_basemap_miner import GoogleBaseMapMiner
 from .google_traffic_miner import GoogleTrafficMiner
 from .google_building_miner import GoogleBuildingMiner
+from .ms_building_miner import MSBuildingMiner
 from .osm_miner import OSMMiner
 from .landsat_miner import LandsatMiner
 from .modis_miner import MODISMiner

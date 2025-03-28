@@ -27,6 +27,7 @@ webdriver-manager>=4.0.2
 zarr>=2.17.0
 netCDF4
 s3fs
+mercantile
 odc-stac==0.3.11
 pystac_client==0.7.2
 pystac==1.9.0

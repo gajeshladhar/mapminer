@@ -45,10 +45,16 @@ class GoogleBaseMapMiner():
     - Generate Google Earth URLs based on coordinates.
     """
     
-    def __init__(self,ocr='paddle',install_chrome=True):
+    def __init__(self,ocr='paddle',metadata=False,install_chrome=True):
         """
         Initializes the GoogleMiner with headless Chrome for web scraping and an OCR reader.
         """
+        self.metadata = metadata
+        if self.metadata is False: 
+            self.get_driver = lambda y : ''
+            self.fetch_metadata = lambda y,z : ''
+            self.get_ocr_reader = lambda : ''
+        
         self.ocr = ocr
         self.driver = self.get_driver(install_chrome)
         self.reader = self.get_ocr_reader()
@@ -392,6 +398,6 @@ class GoogleBaseMapMiner():
             return f"EPSG:327{utm_zone:02d}"  # Southern hemisphere UTM (EPSG:327XX)
     
 if __name__ == '__main__':
-    miner = GoogleBaseMapMiner()
+    miner = GoogleBaseMapMiner(metadata=True)
     ds = miner.fetch(lat=28.46431811,lon=76.9687667, radius=100)
-    print(ds.attrs)
+    print(ds)

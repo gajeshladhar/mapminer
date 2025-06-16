@@ -47,7 +47,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     package_data={
-        'mapminer': ['keys/*'],
+        'mapminer': ['miners/keys/*'],
     },
     install_requires=requirements,
     python_requires='>=3.6',

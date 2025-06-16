@@ -58,6 +58,11 @@ ds = miner.fetch(lon=-95.665, lat=39.8283, radius=10000, daterange="2024-01-01/2
     <pre><code>from mapminer.miners import GoogleBuildingMiner
 miner = GoogleBuildingMiner()
 ds = miner.fetch(lat=34.052235, lon=-118.243683, radius=1000)</code></pre>
+<h3><strong>4️⃣ NAFNet Model</strong></h3>
+<p>You can import and use <code>NAFNet</code> directly for downstream tasks like denoising, enhancement, etc.:</p>
+<pre><code>from mapminer.models import NAFNet
+model = NAFNet(in_channels=12, dim=32,)
+output = model(input_tensor)</code></pre>
     <h2>🖼 <strong>Visualizing the Data</strong></h2>
     <p>You can easily visualize the data fetched using <code class="highlight">hvplot</code>:</p>
     <pre><code>import hvplot.xarray

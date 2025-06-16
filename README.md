@@ -47,15 +47,15 @@
     <h2>📝 <strong>Usage</strong></h2>
     <p>MapMiner provides multiple classes to fetch and process different types of geospatial data:</p>
     <h3><strong>1️⃣ GoogleBaseMapMiner</strong></h3>
-    <pre><code>from mapminer.miner import GoogleBaseMapMiner
+    <pre><code>from mapminer.miners import GoogleBaseMapMiner
 miner = GoogleBaseMapMiner()
 ds = miner.fetch(lat=40.748817, lon=-73.985428, radius=500)</code></pre>
     <h3><strong>2️⃣ CDLMiner</strong></h3>
-    <pre><code>from mapminer.miner import CDLMiner
+    <pre><code>from mapminer.miners import CDLMiner
 miner = CDLMiner()
 ds = miner.fetch(lon=-95.665, lat=39.8283, radius=10000, daterange="2024-01-01/2024-01-10")</code></pre>
     <h3><strong>3️⃣ GoogleBuildingMiner</strong></h3>
-    <pre><code>from mapminer.miner import GoogleBuildingMiner
+    <pre><code>from mapminer.miners import GoogleBuildingMiner
 miner = GoogleBuildingMiner()
 ds = miner.fetch(lat=34.052235, lon=-118.243683, radius=1000)</code></pre>
     <h2>🖼 <strong>Visualizing the Data</strong></h2>

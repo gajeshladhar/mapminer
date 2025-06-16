@@ -1,5 +1,6 @@
 import torch
 from .nafnet import NAFNet
+from .convlstm import ConvLSTM
 
 if __name__=="__main__":
     model = NAFNet(in_channels=12)

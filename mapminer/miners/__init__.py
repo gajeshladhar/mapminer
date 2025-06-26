@@ -13,6 +13,7 @@ from .esri_basemap_miner import ESRIBaseMapMiner
 from .naip_miner import NAIPMiner
 from .cdl_miner import CDLMiner
 from .foursquare_miner import FourSquareMiner
+from .google_embedding_miner import GoogleEmbeddingMiner
 
 if __name__=="__main__":
     miner = GoogleBaseMapMiner()

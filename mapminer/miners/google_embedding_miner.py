@@ -2,25 +2,29 @@ import ee
 import os
 import json
 import xarray as xr
+import geopandas as gpd
 from shapely.geometry import Polygon, Point
 from cryptography.fernet import Fernet
 
 
-class CDLMiner:
+class GoogleEmbeddingMiner:
     """
-    CDLMiner class for extracting data using Google Earth Engine (GEE) and loading it as an xarray DataArray.
+    GoogleEmbeddingMiner extracts annual satellite embedding data from Google Earth Engine (GEE)
+    using the 'GOOGLE/SATELLITE_EMBEDDING/V1/ANNUAL' dataset and loads it as an xarray Dataset.
+    
+    It supports both point-based and polygon-based queries and returns a stack of 64-dimensional
+    image embeddings per pixel for the specified year(s).
     """
-
     def __init__(self, json_path: str = None):
         """
-        Initializes CDLMiner by authenticating using the provided JSON key file.
+        Initializes GoogleEmbeddingMiner by authenticating using the provided JSON key file.
         
         Args:
             json_path (str): Path to the service account JSON file.
         """
         self.authenticate(json_path)
     
-    def fetch(self, lat=None, lon=None, radius=None, polygon=None, daterange="2020-01-01/2021-01-01"):
+    def fetch(self, lat=None, lon=None, radius=None, polygon=None, daterange="2024-01-01/2025-01-01"):
         """
         Fetches data for the given polygon or point within the specified date range.
         
@@ -29,28 +33,26 @@ class CDLMiner:
             lon (float): Longitude of the center point (if no polygon provided).
             radius (float): Radius around the point (in meters) to define the area.
             polygon (shapely.geometry.Polygon): Input polygon in EPSG:4326 (if provided).
-            daterange (str): Date range to filter data (e.g., "2024-01-01/2024-01-10").
+            daterange (str): Date range to filter data (e.g., "2024-01-01/2025-01-01").
         
         Returns:
             xarray.Dataset: Data as an xarray Dataset.
         """
         # Split the date range into start and end dates
         start_date, end_date = daterange.split("/")
-
+        start_year, end_year = int(start_date[:4]), int(end_date[:4])
         if polygon is None:
             # Create a buffer polygon around the point
             polygon = Point(lon, lat).buffer(radius / 111000.0)  # Radius in degrees
 
-        # Convert the Shapely polygon to an Earth Engine geometry
         geometry = ee.Geometry.Polygon(list(polygon.exterior.coords))
-
-        # Load the CDL data from Google Earth Engine
-        ic = ee.ImageCollection('USDA/NASS/CDL').filterDate(start_date, end_date)
+        ic = ee.ImageCollection('GOOGLE/SATELLITE_EMBEDDING/V1/ANNUAL').filterDate(start_date, end_date).filterBounds(geometry)
         # Check if collection has data
         count = ic.size().getInfo()
         if count == 0:
             raise ValueError("No data found for the given area and date range.")
 
+        ic = ic.filter(ee.Filter.calendarRange(start_year, end_year, 'year'))
         # Use xarray to open the dataset with the correct engine and projection
         ds = xr.open_dataset(
             ic,
@@ -98,11 +100,9 @@ class CDLMiner:
 
 
 if __name__ == '__main__':
-    # Initialize CDLMiner with the service account JSON file
-    miner = CDLMiner()
-    
-    # Fetch CDL data for a small area around a given point with a date range
-    ds = miner.fetch(lat=32.33199929,lon=-97.9698071, radius=10000, daterange="2022-01-01/2023-01-01")
-    
+    # Initialize GoogleEmbeddingMiner with the service account JSON file
+    miner = GoogleEmbeddingMiner()
+    # Fetch GoogleEmbedding data for a small area around a given point with a date range
+    ds = miner.fetch(lon=-121.8036, lat=39.0372, radius=100, daterange="2023-01-01/2025-01-01")
     # Output the results
     print(ds)

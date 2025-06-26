@@ -17,7 +17,7 @@ planetary_computer>=1.0.0
 paddlepaddle>=2.6.1
 paddleocr==2.8.1
 rioxarray>=0.15.0
-xee>=0.0.9
+xee==0.0.9
 ipython
 geopandas>=0.14.4
 geoviews>=1.13.0

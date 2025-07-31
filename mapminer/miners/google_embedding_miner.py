@@ -47,6 +47,16 @@ class GoogleEmbeddingMiner:
 
         geometry = ee.Geometry.Polygon(list(polygon.exterior.coords))
         ic = ee.ImageCollection('GOOGLE/SATELLITE_EMBEDDING/V1/ANNUAL').filterDate(start_date, end_date).filterBounds(geometry)
+        
+        image = ic.first().select(0)
+        # Get original projection
+        proj = image.projection().getInfo()
+        transform = proj['transform']
+        # Patch Y-resolution to be negative
+        if transform[4] > 0:
+            transform[4] = -transform[4]
+        # Re-attach to projection
+        patched_proj = ee.Projection(proj['crs'], transform=transform)
         # Check if collection has data
         count = ic.size().getInfo()
         if count == 0:
@@ -57,7 +67,7 @@ class GoogleEmbeddingMiner:
         ds = xr.open_dataset(
             ic,
             engine='ee',
-            projection=ic.first().select(0).projection(),
+            projection=patched_proj,
             geometry=geometry
         )
         

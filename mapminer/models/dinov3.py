@@ -63,8 +63,14 @@ class DiNOV3(nn.Module):
         except Exception:
             pass
 
-    def forward(self, x):
-        return self.model(x)
+    def forward(self, x, tokens=False):
+        Hp_t, Wp_t = x.shape[-2:]
+        y = self.model.forward_features(x)['x_norm_patchtokens']
+        if tokens : 
+            return y
+        B, N, Cemb = y.shape
+        y = y.reshape(B,Cemb,Hp_t//16, Wp_t//16)
+        return y
 
     def normalize(self,x):
         """

@@ -16,7 +16,12 @@
         <img src="https://img.shields.io/badge/Numba-Accelerated-green.svg?style=flat-square&logo=numba" alt="Numba">
         <img src="https://img.shields.io/badge/Selenium-Automated-informational.svg?style=flat-square&logo=selenium" alt="Selenium">
     </p>
-    <p><strong>MapMiner</strong> is a geospatial tool designed to efficiently download and process geospatial data and metadata from various sources. It leverages powerful Python libraries like <strong>Selenium</strong>, <strong>Dask</strong>, <strong>Numba</strong>, and <strong>Xarray</strong> to provide high-performance data retrieval and processing capabilities for geospatial analysis and visualization.</p><br>
+    <p><strong>MapMiner</strong> is a geospatial and model-centric tool designed to efficiently download, process, and analyze geospatial data and metadata from various sources. It leverages powerful Python libraries like <strong>Selenium</strong>, <strong>Dask</strong>, <strong>Numba</strong>, and <strong>Xarray</strong> to provide high-performance data handling and integrates state-of-the-art models for advanced geospatial AI and visualization.</p>
+<br>
+    <h2>🛠 <strong>Installation</strong></h2>
+<p>Ensure you have the necessary dependencies installed:</p>
+    <pre><code class="highlight">pip3 install mapminer</code></pre>
+    <br>
     <h2>🚀 <strong>Key Features</strong></h2>
     <ul>
         <li><strong>🌐 Selenium:</strong> Automated web interactions for metadata extraction.</li>
@@ -39,30 +44,61 @@
 | 🌾 **Crop Layer**                   | `CDL Crop Mask`                                                           |
 | 🕒 **Real-Time**                    | `Google Maps Real-Time Traffic`                                           |
 
+<br>
+<h2>🧠 <strong>Supported Models</strong></h2>
+<p>MapMiner provides pre-integrated state-of-the-art vision models for geospatial AI:</p>
+
+<div>
+
+| Model                  | Description                                                                 | Use Cases                                                                 |
+|-----------------------|-----------------------------------------------------------------------------|---------------------------------------------------------------------------|
+| 🔥 **DINOv3**         | Self-supervised vision transformer pretrained on billions of satellite + web images | Feature extraction, classification, segmentation, detection backbones      |
+| 🌀 **NAFNet**         | Lightweight network for image restoration and enhancement                   | Denoising, deblurring, super-resolution, temporal consistency              |
+| ⏳ **ConvLSTM**       | Convolutional LSTM for spatio-temporal learning                             | Crop forecasting, temporal fusion (Sentinel-1/2), cloud removal, sequence modeling |
+
+</div>
 
 
-<h2>🛠 <strong>Installation</strong></h2>
-<p>Ensure you have the necessary dependencies installed:</p>
-<pre><code class="highlight">pip3 install mapminer</code></pre>
-    <h2>📝 <strong>Usage</strong></h2>
-    <p>MapMiner provides multiple classes to fetch and process different types of geospatial data:</p>
-    <h3><strong>1️⃣ GoogleBaseMapMiner</strong></h3>
-    <pre><code>from mapminer.miners import GoogleBaseMapMiner
-miner = GoogleBaseMapMiner()
-ds = miner.fetch(lat=40.748817, lon=-73.985428, radius=500)</code></pre>
-    <h3><strong>2️⃣ CDLMiner</strong></h3>
-    <pre><code>from mapminer.miners import CDLMiner
-miner = CDLMiner()
-ds = miner.fetch(lon=-95.665, lat=39.8283, radius=10000, daterange="2024-01-01/2024-01-10")</code></pre>
-    <h3><strong>3️⃣ GoogleBuildingMiner</strong></h3>
-    <pre><code>from mapminer.miners import GoogleBuildingMiner
-miner = GoogleBuildingMiner()
-ds = miner.fetch(lat=34.052235, lon=-118.243683, radius=1000)</code></pre>
-<h3><strong>4️⃣ NAFNet Model</strong></h3>
-<p>You can import and use <code>NAFNet</code> directly for downstream tasks like denoising, enhancement, etc.:</p>
+
+
+
+<br>
+<h2>🤖 <strong>Models</strong></h2>
+<h3><strong>1️⃣ DINOv3 Model</strong></h3>
+<p>You can import <code>DINOv3</code> directly for feature extraction or downstream tasks:</p>
+<pre><code>from mapminer.models import DINOv3
+model = DINOv3(pretrained=True)
+output = model(input_tensor)
+</code></pre>
+
+<h3><strong>2️⃣ NAFNet Model</strong></h3>
+<p>Use <code>NAFNet</code> for denoising, enhancement, or temporal SR tasks:</p>
 <pre><code>from mapminer.models import NAFNet
-model = NAFNet(in_channels=12, dim=32,)
-output = model(input_tensor)</code></pre>
+model = NAFNet(in_channels=12, dim=32)
+output = model(input_tensor)
+</code></pre>
+
+<br>
+
+<h2>⛏️ <strong>Miners</strong></h2>
+<h3><strong>1️⃣ GoogleBaseMapMiner</strong></h3>
+<pre><code>from mapminer.miners import GoogleBaseMapMiner
+miner = GoogleBaseMapMiner()
+ds = miner.fetch(lat=40.748817, lon=-73.985428, radius=500)
+</code></pre>
+
+<h3><strong>2️⃣ CDLMiner</strong></h3>
+<pre><code>from mapminer.miners import CDLMiner
+miner = CDLMiner()
+ds = miner.fetch(lon=-95.665, lat=39.8283, radius=10000, daterange="2024-01-01/2024-01-10")
+</code></pre>
+
+<h3><strong>3️⃣ GoogleBuildingMiner</strong></h3>
+<pre><code>from mapminer.miners import GoogleBuildingMiner
+miner = GoogleBuildingMiner()
+ds = miner.fetch(lat=34.052235, lon=-118.243683, radius=1000)
+</code></pre>
+
     <h2>🖼 <strong>Visualizing the Data</strong></h2>
     <p>You can easily visualize the data fetched using <code class="highlight">hvplot</code>:</p>
     <pre><code>import hvplot.xarray

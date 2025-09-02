@@ -176,6 +176,10 @@ class GoogleBaseMapMiner():
                 date = None
                 confidence = None
                 continue
+            try : 
+                clear_output() 
+            except : 
+                pass
         return date,confidence
                 
     

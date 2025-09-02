@@ -16,5 +16,8 @@ from .foursquare_miner import FourSquareMiner
 from .google_embedding_miner import GoogleEmbeddingMiner
 
 if __name__=="__main__":
-    miner = GoogleBaseMapMiner()
-    ds = miner.fetch(-13.25049643,35.24904667,radius=500,resolution=0.5)
+    try : 
+        from IPython.display import clear_output
+        clear_output()
+    except : 
+        pass

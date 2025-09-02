@@ -15,9 +15,9 @@ from .cdl_miner import CDLMiner
 from .foursquare_miner import FourSquareMiner
 from .google_embedding_miner import GoogleEmbeddingMiner
 
-if __name__=="__main__":
-    try : 
-        from IPython.display import clear_output
-        clear_output()
-    except : 
-        pass
+
+try : 
+    from IPython.display import clear_output
+    clear_output()
+except : 
+    pass

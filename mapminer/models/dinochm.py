@@ -28,7 +28,7 @@ class DINOCHM(nn.Module):
         super().__init__()
 
         if version=='v2':
-            checkpoint="compressed_SSLhuge.pth"
+            checkpoint="SSLhuge_satellite.pth"
             repo_url="https://github.com/facebookresearch/HighResCanopyHeight"
             repo_dir="~/.dinochm/HighResCanopyHeight"
             local_dir="~/.dinochm"
@@ -49,15 +49,20 @@ class DINOCHM(nn.Module):
             # download checkpoint via s3fs
             self.ckpt_path = os.path.join(self.local_dir, checkpoint)
             if not os.path.exists(self.ckpt_path):
+                print("Downloading weights from Meta s3://dataforgood-fb-data ...")
                 fs = s3fs.S3FileSystem(anon=True)
                 s3_path = f"dataforgood-fb-data/forests/v1/models/saved_checkpoints/{checkpoint}"
                 with fs.open(s3_path, "rb") as src, open(self.ckpt_path, "wb") as dst:
                     dst.write(src.read())
+                try : 
+                    from IPython.display import clear_output
+                    clear_output() 
+                except : 
+                    pass
 
         # import repo modules and build model
         from models.backbone import SSLVisionTransformer
         from models.dpt_head import DPTHead
-        torch.backends.quantized.engine = 'qnnpack'
 
         class SSLAE(nn.Module):
             def __init__(self, pretrained=None, classify=True, n_bins=256, huge=False):
@@ -87,13 +92,8 @@ class DINOCHM(nn.Module):
 
         # wrap into main module
         self.chm_module_ = SSLAE(classify=True, huge=True).eval()
-        self.chm_module_ = torch.quantization.quantize_dynamic(
-            self.chm_module_,
-            {torch.nn.Linear, torch.nn.Conv2d, torch.nn.ConvTranspose2d},
-            dtype=torch.qint8,
-        )
         if pretrained :
-            ckpt = torch.load(self.ckpt_path, map_location="cpu")
+            ckpt = torch.load(self.ckpt_path, map_location="cpu",weights_only=False)
             self.chm_module_.load_state_dict(ckpt, strict=False)
 
 

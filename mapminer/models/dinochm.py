@@ -57,6 +57,7 @@ class DINOCHM(nn.Module):
         # import repo modules and build model
         from models.backbone import SSLVisionTransformer
         from models.dpt_head import DPTHead
+        torch.backends.quantized.engine = 'qnnpack'
 
         class SSLAE(nn.Module):
             def __init__(self, pretrained=None, classify=True, n_bins=256, huge=False):
@@ -86,6 +87,11 @@ class DINOCHM(nn.Module):
 
         # wrap into main module
         self.chm_module_ = SSLAE(classify=True, huge=True).eval()
+        self.chm_module_ = torch.quantization.quantize_dynamic(
+            self.chm_module_,
+            {torch.nn.Linear, torch.nn.Conv2d, torch.nn.ConvTranspose2d},
+            dtype=torch.qint8,
+        )
         if pretrained :
             ckpt = torch.load(self.ckpt_path, map_location="cpu")
             self.chm_module_.load_state_dict(ckpt, strict=False)

@@ -2,7 +2,7 @@ import torch
 from .nafnet import NAFNet
 from .convlstm import ConvLSTM
 from .dinov3 import DiNOV3
-
+from .dinochm import DINOCHM
 
 # Aliases for convenience
 DINOv3 = DiNOV3

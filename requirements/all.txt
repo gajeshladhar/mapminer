@@ -1,0 +1,7 @@
+-r base.txt
+easyocr==1.7.1
+selenium>=4.23.1
+undetected_chromedriver==3.5.5
+paddlepaddle>=2.6.1
+paddleocr==2.8.1
+webdriver-manager>=4.0.2

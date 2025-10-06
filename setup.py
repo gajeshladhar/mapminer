@@ -7,13 +7,31 @@ HERE = pathlib.Path(__file__).parent
 # The text of the README file
 README = (HERE / "README.md").read_text()
 
-# Read in the requirements from the requirements.txt file
-with open('requirements.txt') as f:
-    requirements = f.read().splitlines()
+# ---- ✅ Minimal Fix: Clean reader for requirements ----
+def read_requirements(path):
+    lines = []
+    with open(path) as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            if line.startswith("-r"):
+                # recursively include referenced file
+                ref_file = line.split(" ", 1)[1]
+                ref_path = pathlib.Path(path).parent / ref_file
+                lines.extend(read_requirements(ref_path))
+            else:
+                lines.append(line)
+    return lines
 
+# Read base and all requirements
+base_requirements = read_requirements('requirements/base.txt')
+all_requirements = read_requirements('requirements/all.txt')
+
+# ---- Setup configuration ----
 setup(
     name='mapminer',
-    version='0.1.65',
+    version='0.1.66',
     description='An advanced geospatial data extraction and processing toolkit for Earth observation datasets.',
     long_description=README,
     long_description_content_type='text/markdown',
@@ -27,8 +45,6 @@ setup(
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
@@ -49,8 +65,11 @@ setup(
     package_data={
         'mapminer': ['miners/keys/*'],
     },
-    install_requires=requirements,
-    python_requires='>=3.6',
+    install_requires=base_requirements,
+    extras_require={
+        "all": all_requirements,
+    },
+    python_requires='>=3.9',  # ✅ updated since many deps need >=3.9
     project_urls={
         'Documentation': 'https://github.com/gajeshladhar/mapminer#readme',
         'Source': 'https://github.com/gajeshladhar/mapminer',

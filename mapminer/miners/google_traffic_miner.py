@@ -9,6 +9,19 @@ import pandas as pd
 import xarray as xr
 import dask
 
+from shapely import Polygon, Point, box
+from rasterio.transform import from_bounds
+import dask
+from IPython.display import clear_output
+
+import locale
+import time
+
+import shutil
+import platform
+import os
+import subprocess
+
 
 class GoogleTrafficMiner():
     """
@@ -22,25 +35,6 @@ class GoogleTrafficMiner():
         """
         Initializes the GoogleMiner with headless Chrome for web scraping and an OCR reader.
         """
-
-        from paddleocr import PaddleOCR
-        from shapely import Polygon, Point, box
-        from rasterio.transform import from_bounds
-        import dask
-        from IPython.display import clear_output
-
-        import locale
-        import time
-        from selenium import webdriver
-        from selenium.webdriver.chrome.options import Options
-        from selenium.webdriver.common.keys import Keys
-        from selenium.webdriver.common.by import By
-        import undetected_chromedriver as uc
-
-        import shutil
-        import platform
-        import os
-        import subprocess
         self.ocr = ocr
                     
     

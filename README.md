@@ -19,8 +19,10 @@
     <p><strong>MapMiner</strong> is a geospatial and model-centric tool designed to efficiently download, process, and analyze geospatial data and metadata from various sources. It leverages powerful Python libraries like <strong>Selenium</strong>, <strong>Dask</strong>, <strong>Numba</strong>, and <strong>Xarray</strong> to provide high-performance data handling and integrates state-of-the-art models for advanced geospatial AI and visualization.</p>
 <br>
     <h2>🛠 <strong>Installation</strong></h2>
-<p>Ensure you have the necessary dependencies installed:</p>
-    <pre><code class="highlight">pip3 install mapminer</code></pre>
+<p>Base installation:</p>
+<pre><code class="highlight">pip install mapminer</code></pre>
+<p>Full installation (includes OCR + Chrome support):</p>
+<pre><code class="highlight">pip install "mapminer[all]"</code></pre>
     <br>
     <h2>🚀 <strong>Key Features</strong></h2>
     <ul>

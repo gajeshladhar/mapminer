@@ -10,29 +10,6 @@ import pandas as pd
 import xarray as xr
 import rioxarray
 
-from paddleocr import PaddleOCR
-from shapely import Polygon, Point, box
-from rasterio.transform import from_bounds
-import dask
-from IPython.display import clear_output
-
-import locale
-import time
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.by import By
-import undetected_chromedriver as uc
-import tempfile
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
-from webdriver_manager.core.driver_cache import DriverCacheManager
-
-import shutil
-import platform
-import os
-import subprocess
 
 
 class GoogleBaseMapMiner():
@@ -49,6 +26,30 @@ class GoogleBaseMapMiner():
         """
         Initializes the GoogleMiner with headless Chrome for web scraping and an OCR reader.
         """
+
+        from paddleocr import PaddleOCR
+        from shapely import Polygon, Point, box
+        from rasterio.transform import from_bounds
+        import dask
+        from IPython.display import clear_output
+
+        import locale
+        import time
+        from selenium import webdriver
+        from selenium.webdriver.chrome.options import Options
+        from selenium.webdriver.common.keys import Keys
+        from selenium.webdriver.common.by import By
+        import undetected_chromedriver as uc
+        import tempfile
+        from selenium.webdriver.chrome.service import Service
+        from selenium.webdriver.chrome.options import Options
+        from webdriver_manager.chrome import ChromeDriverManager
+        from webdriver_manager.core.driver_cache import DriverCacheManager
+
+        import shutil
+        import platform
+        import os
+        import subprocess
         self.metadata = metadata
         if self.metadata is False: 
             self.get_driver = lambda y : ''

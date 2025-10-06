@@ -45,17 +45,24 @@ class GoogleBaseMapMiner():
             self.get_ocr_reader = lambda : ''
         
         else : 
-            from paddleocr import PaddleOCR
-            from selenium import webdriver
-            from selenium.webdriver.chrome.options import Options
-            from selenium.webdriver.common.keys import Keys
-            from selenium.webdriver.common.by import By
-            import undetected_chromedriver as uc
-            import tempfile
-            from selenium.webdriver.chrome.service import Service
-            from selenium.webdriver.chrome.options import Options
-            from webdriver_manager.chrome import ChromeDriverManager
-            from webdriver_manager.core.driver_cache import DriverCacheManager
+            try : 
+                global webdriver, Options, Keys, By, PaddleOCR, tempfile, selenium, Service, undetected_chromedriver, ChromeDriverManager, DriverCacheManager
+                from paddleocr import PaddleOCR
+                from selenium import webdriver
+                from selenium.webdriver.chrome.options import Options
+                from selenium.webdriver.common.keys import Keys
+                from selenium.webdriver.common.by import By
+                import undetected_chromedriver as uc
+                import tempfile
+                from selenium.webdriver.chrome.service import Service
+                from selenium.webdriver.chrome.options import Options
+                from webdriver_manager.chrome import ChromeDriverManager
+                from webdriver_manager.core.driver_cache import DriverCacheManager
+            except ImportError as e:
+                raise ImportError(
+                    "⚠️ Optional dependencies missing. "
+                    "Please install with `pip install mapminer[all]` to use metadata=True"
+                ) from e
 
         self.ocr = ocr
         self.driver = self.get_driver(install_chrome)

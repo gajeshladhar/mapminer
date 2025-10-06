@@ -31,3 +31,4 @@ mercantile
 odc-stac==0.3.11
 pystac_client==0.7.2
 pystac==1.9.0
+torchmetrics

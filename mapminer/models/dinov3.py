@@ -22,11 +22,11 @@ class DiNOV3(nn.Module):
 
     # URLs to checkpoints (can be expanded later)
     pretrained_urls = {
-        "vit-s" : "https://huggingface.co/datasets/gajeshladhar/artifacts/resolve/main/dinov3/dinov3_vits16_pretrain_lvd1689m.pth",
-        "vit-s-plus" : "https://huggingface.co/datasets/gajeshladhar/artifacts/resolve/main/dinov3/dinov3_vits16plus_pretrain_lvd1689m.pth",
-        "vit-l" : "https://huggingface.co/datasets/gajeshladhar/artifacts/resolve/main/dinov3/dinov3_vitl16_pretrain_lvd1689m.pth",
-        "vit-h-plus" : "https://huggingface.co/datasets/gajeshladhar/artifacts/resolve/main/dinov3/dinov3_vith16plus_pretrain_lvd1689m.pth",
-        "vit-l-sat": "https://huggingface.co/datasets/gajeshladhar/artifacts/resolve/main/dinov3/dinov3_vitl16_pretrain_sat493m.pth",
+        "vit-s" : "https://huggingface.co/datasets/gajeshladharai/artifacts/resolve/main/dinov3/dinov3_vits16_pretrain_lvd1689m.pth",
+        "vit-s-plus" : "https://huggingface.co/datasets/gajeshladharai/artifacts/resolve/main/dinov3/dinov3_vits16plus_pretrain_lvd1689m.pth",
+        "vit-l" : "https://huggingface.co/datasets/gajeshladharai/artifacts/resolve/main/dinov3/dinov3_vitl16_pretrain_lvd1689m.pth",
+        "vit-h-plus" : "https://huggingface.co/datasets/gajeshladharai/artifacts/resolve/main/dinov3/dinov3_vith16plus_pretrain_lvd1689m.pth",
+        "vit-l-sat": "https://huggingface.co/datasets/gajeshladharai/artifacts/resolve/main/dinov3/dinov3_vitl16_pretrain_sat493m.pth",
     }
 
     hub_entrypoints = {

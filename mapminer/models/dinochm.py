@@ -93,7 +93,7 @@ class DINOCHM(nn.Module):
         # wrap into main module
         self.chm_module_ = SSLAE(classify=True, huge=True).eval()
         if pretrained :
-            ckpt = torch.load(self.ckpt_path, map_location="cpu",weights_only=False)
+            ckpt = torch.load(self.ckpt_path, map_location="cpu",weights_only=False)['state_dict']
             self.chm_module_.load_state_dict(ckpt, strict=False)
 
 

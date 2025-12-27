@@ -28,4 +28,5 @@ torch
 torchmetrics
 dill
 huggingface_hub
+--find-links wheels/
 transformers==5.0.0rc0

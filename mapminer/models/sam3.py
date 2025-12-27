@@ -117,7 +117,7 @@ class SAM3(nn.Module):
             trust_remote_code=True,
         )
 
-        return model, processor
+        return model.to(self.device), processor
     
     def _to_gdf(self,ds,results):
         if len(results['masks']) == 0:

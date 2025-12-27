@@ -10,9 +10,7 @@ from shapely.geometry import shape, box
 import rasterio.features
 from affine import Affine
 
-from huggingface_hub import snapshot_download
-from transformers import AutoModel, AutoProcessor
-from pathlib import Path
+from huggingface_hub import hf_hub_download
 
 
 class SAM3(nn.Module):
@@ -24,12 +22,6 @@ class SAM3(nn.Module):
             self.processor = processor
         else : 
             self.model, self.processor = self._load_model()
-        
-        try : 
-            from IPython.display import clear_output
-            clear_output()
-        except : 
-            pass
 
     def forward(self,**kwargs):
         raise NotImplementedError("Gradient Enabled Forward pass Not implemented yet, please use inference()")
@@ -98,26 +90,23 @@ class SAM3(nn.Module):
 
 
     def _load_model(self, device='cuda'):
-        
-        local_dir = snapshot_download(
+        try : 
+            from transformers import Sam3Processor, Sam3Model
+        except : 
+            raise Exception("please install latest version of transformers or pip install transformers==5.0.0rc0")
+        path = hf_hub_download(
             repo_id="gajeshladharai/artifacts",
+            filename="sam3/model.pt",
             repo_type="dataset",
-            allow_patterns="sam3/*"
+            token=False
         )
 
-        sam3_path = Path(local_dir) / "sam3"
+        with open(path, "rb") as f:
+            data = dill.load(f)
 
-        model = AutoModel.from_pretrained(
-            sam3_path,
-            trust_remote_code=True,
-        )
-
-        processor = AutoProcessor.from_pretrained(
-            sam3_path,
-            trust_remote_code=True,
-        )
-
-        return model.to(self.device), processor
+        model = data["model"].to(device)
+        processor = data["processor"]
+        return model, processor
     
     def _to_gdf(self,ds,results):
         if len(results['masks']) == 0:

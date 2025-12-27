@@ -14,7 +14,41 @@ from huggingface_hub import hf_hub_download
 
 
 class SAM3(nn.Module):
+    """
+    Meta's SAM3 integration in mapminer for concept-based instance segmentation.
+
+    This class provides a high-level inference interface for running SAM3 on
+    geospatial imagery represented as an xarray DataArray. It supports
+    text-based prompts and optional exemplar geometries, and returns results
+    as a GeoDataFrame in the original CRS.
+
+    The model operates in inference-only mode (no gradients).
+
+    Parameters
+    ----------
+    model : torch.nn.Module, optional
+        Preloaded SAM3 model. If None, the model is loaded from Hugging Face.
+    processor : transformers.Processor, optional
+        Corresponding SAM3 processor. Required if model is provided.
+    device : str, default="cuda"
+        Device to run inference on ("cuda" or "cpu").
+    """
     def __init__(self, model=None, processor=None,device='cuda'):
+        """
+        Initialize the Meta's SAM3 model.
+
+        If model and processor are not provided, they are automatically
+        downloaded and loaded from Hugging Face artifacts.
+
+        Parameters
+        ----------
+        model : torch.nn.Module, optional
+            Preloaded SAM3 model.
+        processor : transformers.Processor, optional
+            SAM3 processor corresponding to the model.
+        device : str, default="cuda"
+            Device for inference.
+        """
         super().__init__()
         self.device = device
         if model is not None : 
@@ -24,9 +58,52 @@ class SAM3(nn.Module):
             self.model, self.processor = self._load_model()
 
     def forward(self,**kwargs):
+        """
+        Disabled forward pass.
+
+        SAM3 right now supports inference-only usage in MapMiner.
+        Use `inference()` instead.
+
+        Raises
+        ------
+        NotImplementedError
+            Always raised to prevent gradient-based usage.
+        """
         raise NotImplementedError("Gradient Enabled Forward pass Not implemented yet, please use inference()")
 
     def inference(self,ds,text=None,exemplars=None,conf=0.5,pixel_conf=0.4):
+        """
+        Run Meta's SAM3 on an image using concept and/or exemplar prompts.
+
+        Parameters
+        ----------
+        ds : xarray.DataArray
+            Input image with dimensions (y, x, band) and spatial coordinates.
+        text : str, optional
+            Concept prompt (e.g., "building", "road", "vehicle").
+        exemplars : geopandas.GeoDataFrame, optional
+            Visual exemplar prompts provided as a GeoDataFrame in the same CRS as `ds`.
+
+            Required columns:
+            - geometry : shapely geometries defining exemplar regions
+            - label : int
+                Binary labels where:
+                * 1 → positive exemplar (object of interest)
+                * 0 → negative exemplar (hard negative)
+
+            If not provided, inference is performed using text prompts only.
+        conf : float, default=0.5
+            Instance-level confidence threshold.
+        pixel_conf : float, default=0.4
+            Pixel-level mask threshold.
+
+        Returns
+        -------
+        geopandas.GeoDataFrame
+            GeoDataFrame containing instance geometries and confidence scores,
+            aligned to the original CRS of the input image.
+        """
+
         if exemplars is None:
             exemplars, labels = None, None
         else : 
@@ -50,6 +127,25 @@ class SAM3(nn.Module):
         return df
 
     def _exemplars_to_boxes(self,ds,exemplars):
+        """
+        Convert exemplar geometries into pixel-space bounding boxes.
+
+        Exemplars are clipped to the spatial extent of the input image and
+        transformed from CRS coordinates into pixel coordinates.
+
+        Parameters
+        ----------
+        ds : xarray.DataArray
+            Input image with spatial coordinates.
+        exemplars : geopandas.GeoDataFrame
+            GeoDataFrame containing exemplar geometries and optional labels.
+
+        Returns
+        -------
+        tuple
+            - list of bounding boxes [[xmin, ymin, xmax, ymax]]
+            - list of integer labels
+        """
         if 'label' not in exemplars.columns:
             exemplars['label'] = 1
 
@@ -90,6 +186,26 @@ class SAM3(nn.Module):
 
 
     def _load_model(self, device='cuda'):
+        """
+        Load SAM3 model and processor from Hugging Face artifacts.
+
+        Requires a recent Transformers version with SAM3 support.
+
+        Parameters
+        ----------
+        device : str, default="cuda"
+            Device to load the model onto.
+
+        Returns
+        -------
+        tuple
+            (model, processor)
+
+        Raises
+        ------
+        Exception
+            If an incompatible Transformers version is installed.
+        """
         try : 
             from transformers import Sam3Processor, Sam3Model
         except : 
@@ -109,6 +225,26 @@ class SAM3(nn.Module):
         return model, processor
     
     def _to_gdf(self,ds,results):
+        """
+        Convert SAM3 segmentation outputs into a GeoDataFrame.
+
+        Pixel-space masks are vectorized into polygons and transformed back
+        into the original CRS of the input image.
+
+        Parameters
+        ----------
+        ds : xarray.DataArray
+            Input image with spatial coordinates.
+        results : dict
+            Output dictionary from SAM3 post-processing containing masks and scores.
+
+        Returns
+        -------
+        geopandas.GeoDataFrame
+            GeoDataFrame with columns:
+            - geometry : shapely geometry
+            - score : confidence score
+        """
         if len(results['masks']) == 0:
             return gpd.GeoDataFrame()
         

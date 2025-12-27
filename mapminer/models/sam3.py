@@ -10,8 +10,9 @@ from shapely.geometry import shape, box
 import rasterio.features
 from affine import Affine
 
-from transformers import Sam3Processor, Sam3Model
-from huggingface_hub import hf_hub_download
+from huggingface_hub import snapshot_download
+from transformers import AutoModel, AutoProcessor
+from pathlib import Path
 
 
 class SAM3(nn.Module):
@@ -91,18 +92,25 @@ class SAM3(nn.Module):
 
 
     def _load_model(self, device='cuda'):
-        path = hf_hub_download(
+        
+        local_dir = snapshot_download(
             repo_id="gajeshladharai/artifacts",
-            filename="sam3/model.pt",
             repo_type="dataset",
-            token=False
+            allow_patterns="sam3/*"
         )
 
-        with open(path, "rb") as f:
-            data = dill.load(f)
+        sam3_path = Path(local_dir) / "sam3"
 
-        model = data["model"].to(device)
-        processor = data["processor"]
+        model = AutoModel.from_pretrained(
+            sam3_path,
+            trust_remote_code=True,
+        )
+
+        processor = AutoProcessor.from_pretrained(
+            sam3_path,
+            trust_remote_code=True,
+        )
+
         return model, processor
     
     def _to_gdf(self,ds,results):

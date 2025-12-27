@@ -28,5 +28,3 @@ torch
 torchmetrics
 dill
 huggingface_hub
-transformers @ git+https://github.com/huggingface/transformers.git@v5.0.0rc0
-

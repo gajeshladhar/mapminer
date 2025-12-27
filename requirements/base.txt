@@ -28,5 +28,5 @@ torch
 torchmetrics
 dill
 huggingface_hub
---find-links wheels/
-transformers==5.0.0rc0
+transformers @ git+https://github.com/huggingface/transformers.git@v5.0.0rc0
+

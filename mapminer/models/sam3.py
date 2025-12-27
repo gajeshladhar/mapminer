@@ -24,6 +24,12 @@ class SAM3(nn.Module):
             self.processor = processor
         else : 
             self.model, self.processor = self._load_model()
+        
+        try : 
+            from IPython.display import clear_output
+            clear_output()
+        except : 
+            pass
 
     def forward(self,**kwargs):
         raise NotImplementedError("Gradient Enabled Forward pass Not implemented yet, please use inference()")

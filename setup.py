@@ -31,7 +31,7 @@ all_requirements = read_requirements('requirements/all.txt')
 # ---- Setup configuration ----
 setup(
     name='mapminer',
-    version='0.1.72',
+    version='0.1.73',
     description='An advanced geospatial data extraction and processing toolkit for Earth observation datasets.',
     long_description=README,
     long_description_content_type='text/markdown',

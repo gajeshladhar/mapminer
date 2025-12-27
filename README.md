@@ -56,7 +56,8 @@
 |----------------|---------------------------------------------------------------------------|
 | 🔥 DINOv3      | Feature extraction, classification, segmentation, detection backbones      |
 | 🌀 NAFNet      | Denoising, deblurring, super-resolution, temporal consistency              |
-| ⏳ ConvLSTM    | Crop forecasting, temporal fusion (Sentinel-1/2), cloud removal, sequence modeling |
+| ⏳ ConvLSTM    | Crop forecasting, temporal fusion (Sentinel-1/2), sequence modeling        |
+| 💎 SAM3        | Prompt-based instance segmentation, fast zero-shot object extraction       |
 
 <br>
 </div>
@@ -80,6 +81,13 @@ output = model(input_tensor)
 <pre><code>from mapminer.models import NAFNet
 model = NAFNet(in_channels=12, dim=32)
 output = model(input_tensor)
+</code></pre>
+
+<h3><strong>3️⃣ SAM3 Model</strong></h3>
+<p>Use <code>SAM3</code> for prompt-based instance segmentation on high-resolution geospatial imagery:</p>
+<pre><code>from mapminer.models import SAM3
+sam3 = SAM3() 
+df = sam3.inference(ds,text='building', exemplars=None)
 </code></pre>
 
 <br>

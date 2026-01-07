@@ -73,7 +73,8 @@
 <p>You can import <code>DINOv3</code> directly for feature extraction or downstream tasks:</p>
 <pre><code>from mapminer.models import DINOv3
 model = DINOv3(pretrained=True)
-output = model(input_tensor)
+x = normalize(input_tensor)
+output = model(x)
 </code></pre>
 
 <h3><strong>2️⃣ NAFNet Model</strong></h3>

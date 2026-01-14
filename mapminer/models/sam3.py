@@ -11,6 +11,7 @@ import rasterio.features
 from affine import Affine
 
 from huggingface_hub import hf_hub_download
+from huggingface_hub import snapshot_download
 
 
 class SAM3(nn.Module):
@@ -185,7 +186,7 @@ class SAM3(nn.Module):
         return [exemplars], [labels]
 
 
-    def _load_model(self, device='cuda'):
+    def _load_model(self, device="cuda"):
         """
         Load SAM3 model and processor from Hugging Face artifacts.
 
@@ -206,22 +207,47 @@ class SAM3(nn.Module):
         Exception
             If an incompatible Transformers version is installed.
         """
-        try : 
-            from transformers import Sam3Processor, Sam3Model
-        except : 
-            raise Exception("please install latest version of transformers or pip install transformers==5.0.0rc0")
-        path = hf_hub_download(
+        try:
+            from transformers import Sam3Model, Sam3Processor
+        except ImportError:
+            raise RuntimeError(
+                "Install SAM3-compatible transformers: "
+                "pip install transformers==5.0.0rc0"
+            )
+
+        local_dir = snapshot_download(
             repo_id="gajeshladharai/artifacts",
-            filename="sam3/model.pt",
             repo_type="dataset",
+            allow_patterns=[
+                "sam3/config.json",
+                "sam3/model.safetensors",
+                "sam3/processor_config.json",
+                "sam3/tokenizer.json",
+                "sam3/tokenizer_config.json",
+            ],
             token=False
         )
 
-        with open(path, "rb") as f:
-            data = dill.load(f)
+        sam3_dir = f"{local_dir}/sam3"
 
-        model = data["model"].to(device)
-        processor = data["processor"]
+        processor = Sam3Processor.from_pretrained(
+            sam3_dir,
+            trust_remote_code=True
+        )
+
+        model = Sam3Model.from_pretrained(
+            sam3_dir,
+            torch_dtype="auto",
+            trust_remote_code=True
+        )
+
+        model = model.to(device).eval()
+
+        try : 
+            from IPython.display import clear_output 
+            clear_output()
+        except : 
+            pass
         return model, processor
     
     def _to_gdf(self,ds,results):

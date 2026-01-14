@@ -26,6 +26,7 @@ pystac_client==0.7.2
 pystac==1.9.0
 torch
 torchmetrics
+torchvision
 dill
 huggingface_hub
 transformers

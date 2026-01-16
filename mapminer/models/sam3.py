@@ -2,6 +2,7 @@ import numpy as np
 import xarray as xr
 import torch 
 from torch import nn
+import torch.nn.functional as F
 import dill
 
 from PIL import Image
@@ -72,9 +73,14 @@ class SAM3(nn.Module):
         """
         raise NotImplementedError("Gradient Enabled Forward pass Not implemented yet, please use inference()")
 
-    def inference(self,ds,text=None,exemplars=None,conf=0.5,pixel_conf=0.4):
+    def inference(self,ds,text=None,exemplars=None,conf=0.5,pixel_conf=0.4,full_graph=False):
         """
-        Run Meta's SAM3 on an image using concept and/or exemplar prompts.
+        Run SAM3 inference using text and/or exemplar prompts.
+
+        When `full_graph=True`, returns the complete SAM3 output dictionary
+        containing intermediate results from all stages of inference
+        (encoder, decoder, masks, logits, boxes, etc.). Vision embeddings
+        resampled to input image space are exposed under the `ds_embedding` key.
 
         Parameters
         ----------
@@ -83,26 +89,21 @@ class SAM3(nn.Module):
         text : str, optional
             Concept prompt (e.g., "building", "road", "vehicle").
         exemplars : geopandas.GeoDataFrame, optional
-            Visual exemplar prompts provided as a GeoDataFrame in the same CRS as `ds`.
-
-            Required columns:
-            - geometry : shapely geometries defining exemplar regions
-            - label : int
-                Binary labels where:
-                * 1 → positive exemplar (object of interest)
-                * 0 → negative exemplar (hard negative)
-
-            If not provided, inference is performed using text prompts only.
+            Exemplar geometries with optional binary labels (1 = positive, 0 = negative).
         conf : float, default=0.5
             Instance-level confidence threshold.
         pixel_conf : float, default=0.4
             Pixel-level mask threshold.
+        full_graph : bool, default=False
+            If True, return the full SAM3 output graph including all intermediate
+            tensors and post-processed artifacts.
 
         Returns
         -------
-        geopandas.GeoDataFrame
-            GeoDataFrame containing instance geometries and confidence scores,
-            aligned to the original CRS of the input image.
+        geopandas.GeoDataFrame or dict
+            GeoDataFrame of predicted instances when `full_graph=False`;
+            otherwise, the full SAM3 output dictionary with vision embeddings
+            available via `outputs["ds_embedding"]`.
         """
 
         if exemplars is None:
@@ -117,7 +118,10 @@ class SAM3(nn.Module):
             return_tensors="pt").to(self.device)
         
         with torch.no_grad():
-            outputs = self.model(**inputs)
+            outputs = self.model(
+            **inputs,
+            output_hidden_states=full_graph,
+            return_dict=True)
         
         results = self.processor.post_process_instance_segmentation(
                 outputs,
@@ -125,7 +129,26 @@ class SAM3(nn.Module):
                 mask_threshold=pixel_conf,
                 target_sizes=inputs.get("original_sizes").tolist())[0]
         df = self._to_gdf(ds,results)
-        return df
+
+        if full_graph : 
+            return df, self._process_graph(ds,outputs)
+        return df 
+
+    def _process_graph(self,ds,outputs):
+        """
+        Normalize SAM3 encoder embeddings, resample to input image resolution,
+        and attach them as a dense xarray DataArray to the outputs dict.
+        """
+        _ = self._normalize_image_embedding(outputs['encoder_hidden_states'][-1]).data.cpu()
+        H, W = ds.sizes["y"], ds.sizes["x"]
+        _ = F.interpolate(
+            _,
+            size=(H, W),
+            mode="bilinear",
+            align_corners=False)[0]
+        outputs['ds_embedding'] = xr.DataArray(_.numpy(),dims=['band','y','x'],coords={'band':[f"A{str(i).zfill(2)}" for i in range(1, 257)],'y':ds.y.values,'x':ds.x.values})
+
+        return outputs
 
     def _exemplars_to_boxes(self,ds,exemplars):
         """
@@ -299,6 +322,21 @@ class SAM3(nn.Module):
         )
         gdf["geometry"] = gdf.geometry.buffer(0)
         return gdf
+    
+    def _normalize_image_embedding(self,emb):
+        """
+        Normalize SAM3 encoder embedding to (B, C, H, W)
+        """
+        if emb.dim() == 3:
+            # (B, N, C) → (B, C, H, W)
+            B, N, C = emb.shape
+            H = W = int(N ** 0.5)
+            emb = emb.view(B, H, W, C).permute(0, 3, 1, 2)
+        elif emb.dim() == 4:
+            # (B, H, W, C) → (B, C, H, W)
+            emb = emb.permute(0, 3, 1, 2)
+        return emb
+
 
 if __name__=="__main__":
     sam = SAM3()

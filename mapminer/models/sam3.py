@@ -146,7 +146,8 @@ class SAM3(nn.Module):
             size=(H, W),
             mode="bilinear",
             align_corners=False)[0]
-        outputs['ds_embedding'] = xr.DataArray(_.numpy(),dims=['band','y','x'],coords={'band':[f"A{str(i).zfill(2)}" for i in range(1, 257)],'y':ds.y.values,'x':ds.x.values})
+        latent_dims = _.shape[0]
+        outputs['ds_embedding'] = xr.DataArray(_.numpy(),dims=['band','y','x'],coords={'band':[f"A{str(i).zfill(2)}" for i in range(1, latent_dims+1)],'y':ds.y.values,'x':ds.x.values})
 
         return outputs
 

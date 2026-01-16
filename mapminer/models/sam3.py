@@ -139,7 +139,7 @@ class SAM3(nn.Module):
         Normalize SAM3 encoder embeddings, resample to input image resolution,
         and attach them as a dense xarray DataArray to the outputs dict.
         """
-        _ = self._normalize_image_embedding(outputs['encoder_hidden_states'][-1]).data.cpu()
+        _ = self._normalize_image_embedding(outputs['vision_hidden_states'][-1]).data.cpu()
         H, W = ds.sizes["y"], ds.sizes["x"]
         _ = F.interpolate(
             _,

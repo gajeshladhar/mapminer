@@ -27,6 +27,6 @@ pystac==1.9.0
 torch
 torchmetrics
 torchvision
-dill
+joblib
 huggingface_hub
 transformers

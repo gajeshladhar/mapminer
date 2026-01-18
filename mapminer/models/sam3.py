@@ -16,6 +16,12 @@ from huggingface_hub import snapshot_download
 
 from joblib import Parallel, delayed
 
+def safe_clear():
+    try : 
+        from IPython.display import clear_output 
+        clear_output()
+    except : 
+        pass
 
 class SAM3(nn.Module):
     """
@@ -61,7 +67,8 @@ class SAM3(nn.Module):
         else : 
             self.model, self.processor, self.sam3_dir = self._load_model(device=device)
         
-        self.pvs = None
+        self.pvs = SAM3PVS(self.sam3_dir,device=self.device)
+        safe_clear()
 
     def forward(self,**kwargs):
         """
@@ -128,9 +135,6 @@ class SAM3(nn.Module):
             with dense vision embeddings available via `outputs["ds_embedding"]`.
         """
         if df is not None : 
-            if self.pvs is None : 
-                self.pvs = SAM3PVS(self.sam3_dir,device=self.device)
-            
             df, outputs = self.pvs.inference(ds,df,conf=conf,pixel_conf=pixel_conf,full_graph=full_graph)
         
         else : 
@@ -295,11 +299,7 @@ class SAM3(nn.Module):
 
         model = model.to(device).eval()
 
-        try : 
-            from IPython.display import clear_output 
-            clear_output()
-        except : 
-            pass
+        safe_clear()
         return model, processor, sam3_dir
     
     def _to_gdf(self,ds,results):

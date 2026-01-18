@@ -219,7 +219,9 @@ class GoogleBaseMapMiner():
             bbox = polygon.buffer(80*(1e-5)).bounds
             ds,metadata = dask.compute(self.fetch_imagery(bbox,resolution),self.fetch_metadata(bbox,resolution))
             utm_crs = self._get_utm_crs(polygon.centroid.y, polygon.centroid.x)
-            ds = ds.rio.reproject(utm_crs).rio.clip(geometries=[box(*gpd.GeoDataFrame([{'geometry':polygon}],crs='epsg:4326').to_crs(utm_crs).iloc[0,-1].bounds)],drop=True)
+            ds = ds.astype("float32").rio.reproject(utm_crs,nodata=None).rio.clip(geometries=[box(*gpd.GeoDataFrame([{'geometry':polygon}],crs='epsg:4326').to_crs(utm_crs).iloc[0,-1].bounds)],drop=True)
+            ds = ds.astype("uint8")
+        
         else : 
             ds,metadata = dask.compute(self.fetch_imagery(bbox,resolution),self.fetch_metadata(bbox,resolution))
         ds.attrs['metadata'] = metadata
@@ -390,7 +392,7 @@ class GoogleBaseMapMiner():
         )
         da = da.rio.write_crs("EPSG:3857", inplace=False)
         da = da.rio.write_transform(transform, inplace=False)
-        da = da.rio.write_nodata(-1, inplace=False)
+        da = da.rio.write_nodata(None, inplace=False)
         return da
     
     def _get_utm_crs(self, lat, lon):

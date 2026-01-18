@@ -550,7 +550,7 @@ class SAM3PVS(nn.Module):
         )
         inv = ~transform
 
-        results = Parallel(n_jobs=n_jobs, backend="loky")(
+        results = Parallel(n_jobs=n_jobs, backend="threading")(
             delayed(SAM3PVS._process_single_geom)(geom, inv)
             for geom in gdf.geometry
         )
@@ -583,7 +583,7 @@ class SAM3PVS(nn.Module):
         )
 
         best_masks = masks[:, 0].cpu().numpy().astype(np.uint8)
-        geometries = Parallel(n_jobs=n_jobs, backend="loky")(
+        geometries = Parallel(n_jobs=n_jobs, backend="threading")(
             delayed(SAM3PVS._process_single_mask)(mask, transform)
             for mask in best_masks
         )

@@ -388,6 +388,9 @@ class GoogleBaseMapMiner():
                 "crs": "EPSG:3857"  # Corrected to Web Mercator CRS
             }
         )
+        da = da.rio.write_crs("EPSG:3857", inplace=False)
+        da = da.rio.write_transform(transform, inplace=False)
+        da = da.rio.write_nodata(-1, inplace=False)
         return da
     
     def _get_utm_crs(self, lat, lon):

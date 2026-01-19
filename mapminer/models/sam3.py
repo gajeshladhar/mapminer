@@ -16,6 +16,7 @@ from huggingface_hub import hf_hub_download
 from huggingface_hub import snapshot_download
 
 from joblib import Parallel, delayed
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 def safe_clear():
     try : 
@@ -315,34 +316,52 @@ class SAM3(nn.Module):
             0, y[1] - y[0], y[0]
         )
 
-        records = []
-
         masks = results["masks"].data.cpu().numpy()
         scores = results["scores"].data.cpu().numpy()
 
-        for mask, score in zip(masks, scores):
+        records = []
+
+        def process_one(mask, score):
             mask = mask.astype(np.uint8)
 
-            # 🔥 bounding-box crop
             ys, xs = np.where(mask == 1)
             if len(xs) == 0:
-                continue
+                return []
 
             xmin, xmax = xs.min(), xs.max()
             ymin, ymax = ys.min(), ys.max()
 
-            submask = mask[ymin:ymax+1, xmin:xmax+1]
+            submask = mask[ymin:ymax + 1, xmin:xmax + 1]
             sub_transform = transform * Affine.translation(xmin, ymin)
 
-            for geom, val in rasterio.features.shapes(submask, transform=sub_transform):
+            out = []
+            for geom, val in rasterio.features.shapes(
+                submask, transform=sub_transform
+            ):
                 if val == 1:
-                    records.append((shape(geom), float(score)))
+                    out.append((shape(geom), float(score)))
+            return out
+
+
+        with ThreadPoolExecutor(
+            max_workers=min(os.cpu_count(), len(masks))
+        ) as executor:
+
+            futures = [
+                executor.submit(process_one, m, s)
+                for m, s in zip(masks, scores)
+                if m.sum() > 5          # skip tiny masks early
+            ]
+
+            for fut in as_completed(futures):
+                records.extend(fut.result())
 
         return gpd.GeoDataFrame(
             records,
             columns=["geometry", "score"],
             crs=ds.rio.crs if hasattr(ds, "rio") else ds.attrs.get("crs")
         )
+
 
 
     

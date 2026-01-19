@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import xarray as xr
 import torch 
@@ -301,31 +302,11 @@ class SAM3(nn.Module):
 
         safe_clear()
         return model, processor, sam3_dir
-    
-    def _to_gdf(self,ds,results):
-        """
-        Convert SAM3 segmentation outputs into a GeoDataFrame.
-
-        Pixel-space masks are vectorized into polygons and transformed back
-        into the original CRS of the input image.
-
-        Parameters
-        ----------
-        ds : xarray.DataArray
-            Input image with spatial coordinates.
-        results : dict
-            Output dictionary from SAM3 post-processing containing masks and scores.
-
-        Returns
-        -------
-        geopandas.GeoDataFrame
-            GeoDataFrame with columns:
-            - geometry : shapely geometry
-            - score : confidence score
-        """
-        if len(results['masks']) == 0:
+ 
+    def _to_gdf(self, ds, results):
+        if len(results["masks"]) == 0:
             return gpd.GeoDataFrame()
-        
+
         x = ds.x.values
         y = ds.y.values
 
@@ -335,22 +316,35 @@ class SAM3(nn.Module):
         )
 
         records = []
-        for mask, score in zip(results["masks"].data.cpu().numpy(), results["scores"].data.cpu()):
+
+        masks = results["masks"].data.cpu().numpy()
+        scores = results["scores"].data.cpu().numpy()
+
+        for mask, score in zip(masks, scores):
             mask = mask.astype(np.uint8)
 
-            for geom, val in rasterio.features.shapes(mask, transform=transform):
+            # 🔥 bounding-box crop
+            ys, xs = np.where(mask == 1)
+            if len(xs) == 0:
+                continue
+
+            xmin, xmax = xs.min(), xs.max()
+            ymin, ymax = ys.min(), ys.max()
+
+            submask = mask[ymin:ymax+1, xmin:xmax+1]
+            sub_transform = transform * Affine.translation(xmin, ymin)
+
+            for geom, val in rasterio.features.shapes(submask, transform=sub_transform):
                 if val == 1:
-                    records.append({
-                        "score": float(score),
-                        "geometry": shape(geom)
-                    })
-        gdf = gpd.GeoDataFrame(
+                    records.append((shape(geom), float(score)))
+
+        return gpd.GeoDataFrame(
             records,
-            geometry="geometry",
+            columns=["geometry", "score"],
             crs=ds.rio.crs if hasattr(ds, "rio") else ds.attrs.get("crs")
         )
-        gdf["geometry"] = gdf.geometry.buffer(0)
-        return gdf
+
+
     
     def _normalize_image_embedding(self,emb):
         """

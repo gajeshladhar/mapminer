@@ -272,10 +272,17 @@ class OSMProcessor:
 
         # Convert processed features to GeoDataFrame
         if self.processed_features:
-            return gpd.GeoDataFrame(self.processed_features, crs="EPSG:4326")
+            return gpd.GeoDataFrame(
+                self.processed_features,
+                geometry="geometry",
+                crs="EPSG:4326"
+            )
         else:
-            return gpd.GeoDataFrame(self.processed_features)
-
+            return gpd.GeoDataFrame(
+                pd.DataFrame(columns=["feature_id", "type", "tags", "geometry"]),
+                geometry="geometry",
+                crs="EPSG:4326"
+            )
 
 if __name__ == '__main__':
     # Initialize DEMMiner with the service account JSON file

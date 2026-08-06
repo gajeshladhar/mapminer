@@ -45,10 +45,10 @@ class Sentinel1Miner:
                 os.environ["AWS_NO_SIGN_REQUEST"] = "YES"
             self.catalog = Client.open(self.catalog_url)
 
-    def fetch(self, lat=None, lon=None, radius=None, polygon=None, daterange="2024-01-01/2024-01-10", merge_nodata=False):
+    def fetch(self, lat=None, lon=None, radius=None, polygon=None, daterange="2024-01-01/2024-01-10", merge_nodata=False, orbit_state=None, relative_orbit=None):
         """
         Fetches Sentinel-1 GRD imagery for a given date range and bounding box or polygon.
-        
+
         Parameters:
         - daterange (str): Date range in 'YYYY-MM-DD/YYYY-MM-DD' format.
         - polygon (Polygon): Polygon defining the area of interest (optional).
@@ -56,40 +56,57 @@ class Sentinel1Miner:
         - lon (float): Longitude of the center point (if polygon is None).
         - radius (float): Radius around the center point in kilometers (if polygon is None).
         - merge_nodata (bool): Whether to merge nodata values from neighboring tiles (default: False).
-        
+        - orbit_state (str): Optional filter for orbit direction, e.g. 'ascending' or 'descending'.
+        - relative_orbit (int): Optional filter for the relative orbit number, e.g. 156.
+
         Returns:
         - xarray.Dataset: Sentinel-1 GRD imagery with georeferencing and nodata merged if specified.
         """
-        if polygon is None : 
+        if polygon is None :
             polygon = Point(lon,lat).buffer(radius/111/1000)
 
         # Determine the local UTM CRS based on the bounding box
         utm_crs = self._get_utm_crs(polygon.centroid.y, polygon.centroid.x)
 
-        ds_sentinel = self.fetch_imagery(daterange, polygon.bounds, utm_crs, merge_nodata)
+        ds_sentinel = self.fetch_imagery(daterange, polygon.bounds, utm_crs, merge_nodata, orbit_state, relative_orbit)
         return ds_sentinel
 
-    def fetch_imagery(self, daterange, bbox, crs, merge_nodata=False):
+    def fetch_imagery(self, daterange, bbox, crs, merge_nodata=False, orbit_state=None, relative_orbit=None):
         """
         Returns Dask Datacube of Sentinel-1 GRD based on the provided bounding box and date range (Lazy Loading).
-        
+
         Parameters:
         - daterange (str): Date range in 'YYYY-MM-DD/YYYY-MM-DD' format.
         - bbox (list): Bounding box as [west, south, east, north].
         - crs (str): CRS to use for the dataset (typically UTM).
         - merge_nodata (bool): Whether to merge nodata values from neighboring tiles (default: False).
-        
+        - orbit_state (str): Optional filter for orbit direction, e.g. 'ascending' or 'descending'.
+        - relative_orbit (int): Optional filter for the relative orbit number, e.g. 156.
+
         Returns:
         - xarray.Dataset: Sentinel-1 GRD dataset.
         """
+        stac_query = {}
+        if orbit_state is not None:
+            stac_query["sat:orbit_state"] = {"eq": orbit_state.lower()}
+        if relative_orbit is not None:
+            stac_query["sat:relative_orbit"] = {"eq": relative_orbit}
+
         query = self.catalog.search(
             collections=[self.collection],
             datetime=daterange,
             limit=100,
-            bbox=bbox
+            bbox=bbox,
+            query=stac_query or None
         )
         query = list(query.items())
         query = sorted(query, key=lambda item: item.properties.get("datetime"))
+
+        if not query:
+            raise ValueError(
+                f"No Sentinel-1 scenes found for daterange={daterange!r}, bbox={bbox}, "
+                f"orbit_state={orbit_state!r}, relative_orbit={relative_orbit!r}."
+            )
 
         # Load the dataset with specified CRS (UTM) and resolution (10 meters for Sentinel-1 GRD)
         ds_sentinel = load(

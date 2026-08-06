@@ -6,6 +6,7 @@ import planetary_computer
 from odc.stac import load
 import xarray as xr
 import numpy as np
+import pandas as pd
 import rioxarray
 from pystac_client import Client
 from shapely.geometry import Polygon, Point, box
@@ -109,19 +110,32 @@ class Sentinel1Miner:
             )
 
         # Load the dataset with specified CRS (UTM) and resolution (10 meters for Sentinel-1 GRD)
+        # groupby="solar_day" mosaics multiple scenes acquired on the same day into a single time slice
         ds_sentinel = load(
             query,
             bbox=bbox,
             crs=crs,             # Use the dynamically calculated UTM CRS
             resolution=10,       # Resolution for Sentinel-1 GRD (10 meters)
+            groupby="solar_day",
             chunks={}
         ).astype("float32").sortby('time', ascending=True)
 
         if merge_nodata:
             ds_sentinel = self._merge_nodata(ds_sentinel)
 
-        # Attach per-scene metadata (SAR properties + radiometric calibration LUTs) to attrs
-        ds_sentinel.attrs['metadata'] = [self._extract_metadata(item) for item in query]
+        # Attach per-day metadata (SAR properties + radiometric calibration) to attrs, grouped
+        # the same way as the pixel data so it lines up one-to-one with ds_sentinel.time
+        items_by_day = {}
+        for item in query:
+            day = pd.Timestamp(item.properties.get("datetime")).date()
+            items_by_day.setdefault(day, []).append(item)
+
+        metadata = []
+        for t in pd.to_datetime(ds_sentinel.time.values):
+            scenes = [self._extract_metadata(item) for item in items_by_day.get(t.date(), [])]
+            metadata.append(scenes[0] if len(scenes) == 1 else {"date": str(t.date()), "scenes": scenes})
+
+        ds_sentinel.attrs['metadata'] = metadata
 
         return ds_sentinel
 

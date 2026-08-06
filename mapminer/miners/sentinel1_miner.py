@@ -130,35 +130,34 @@ class Sentinel1Miner:
 
     def _parse_calibration_xml(self, xml_bytes):
         """
-        Parses a Sentinel-1 `calibration-iw-{pol}.xml` annotation file into the
-        sigmaNought calibration LUT (used to convert digital numbers to sigma0):
+        Parses a Sentinel-1 `calibration-iw-{pol}.xml` annotation file down to the
+        handful of scalars needed for radiometric calibration:
 
             sigma0 = (raw_data.astype(float) ** 2) / (K ** 2)
 
-        where K is obtained by interpolating this LUT to the pixel/line of interest.
+        K is the mean sigmaNought calibration constant for the scene (the full
+        per-pixel LUT in the XML is thousands of values and isn't kept here).
 
         Parameters:
         - xml_bytes (bytes): Raw contents of the calibration XML file.
 
         Returns:
-        - dict: absoluteCalibrationConstant plus per-vector line/pixel/sigmaNought arrays.
+        - dict: absoluteCalibrationConstant, K (mean), K_min, K_max.
         """
         root = ET.fromstring(xml_bytes)
 
         absolute_calibration_constant = float(root.findtext(".//absoluteCalibrationConstant", default="1.0"))
 
-        vectors = []
+        sigma_values = []
         for vector in root.findall(".//calibrationVectorList/calibrationVector"):
-            vectors.append({
-                "azimuthTime": vector.findtext("azimuthTime"),
-                "line": int(vector.findtext("line")),
-                "pixel": [int(v) for v in vector.findtext("pixel").split()],
-                "sigmaNought": [float(v) for v in vector.findtext("sigmaNought").split()],
-            })
+            sigma_values.extend(float(v) for v in vector.findtext("sigmaNought").split())
+        sigma_values = np.array(sigma_values, dtype="float64")
 
         return {
             "absoluteCalibrationConstant": absolute_calibration_constant,
-            "calibrationVectorList": vectors,
+            "K": float(sigma_values.mean()),
+            "K_min": float(sigma_values.min()),
+            "K_max": float(sigma_values.max()),
         }
 
     def _extract_metadata(self, item):

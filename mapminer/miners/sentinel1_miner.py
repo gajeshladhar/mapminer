@@ -1,4 +1,7 @@
 import os
+import requests
+import s3fs
+import xml.etree.ElementTree as ET
 import planetary_computer
 from odc.stac import load
 import xarray as xr
@@ -86,6 +89,7 @@ class Sentinel1Miner:
             bbox=bbox
         )
         query = list(query.items())
+        query = sorted(query, key=lambda item: item.properties.get("datetime"))
 
         # Load the dataset with specified CRS (UTM) and resolution (10 meters for Sentinel-1 GRD)
         ds_sentinel = load(
@@ -99,7 +103,93 @@ class Sentinel1Miner:
         if merge_nodata:
             ds_sentinel = self._merge_nodata(ds_sentinel)
 
+        # Attach per-scene metadata (SAR properties + radiometric calibration LUTs) to attrs
+        ds_sentinel.attrs['metadata'] = [self._extract_metadata(item) for item in query]
+
         return ds_sentinel
+
+    def _fetch_asset_bytes(self, href):
+        """
+        Downloads the raw bytes of a STAC asset, transparently handling both
+        signed HTTPS hrefs (Planetary Computer) and s3:// hrefs (Copernicus / element84).
+
+        Parameters:
+        - href (str): Asset href as returned by the STAC item.
+
+        Returns:
+        - bytes: Raw contents of the asset.
+        """
+        if href.startswith("s3://"):
+            fs = s3fs.S3FileSystem(anon=True)
+            with fs.open(href.replace("s3://", ""), "rb") as f:
+                return f.read()
+        else:
+            response = requests.get(href, timeout=30)
+            response.raise_for_status()
+            return response.content
+
+    def _parse_calibration_xml(self, xml_bytes):
+        """
+        Parses a Sentinel-1 `calibration-iw-{pol}.xml` annotation file into the
+        sigmaNought calibration LUT (used to convert digital numbers to sigma0):
+
+            sigma0 = (raw_data.astype(float) ** 2) / (K ** 2)
+
+        where K is obtained by interpolating this LUT to the pixel/line of interest.
+
+        Parameters:
+        - xml_bytes (bytes): Raw contents of the calibration XML file.
+
+        Returns:
+        - dict: absoluteCalibrationConstant plus per-vector line/pixel/sigmaNought arrays.
+        """
+        root = ET.fromstring(xml_bytes)
+
+        absolute_calibration_constant = float(root.findtext(".//absoluteCalibrationConstant", default="1.0"))
+
+        vectors = []
+        for vector in root.findall(".//calibrationVectorList/calibrationVector"):
+            vectors.append({
+                "azimuthTime": vector.findtext("azimuthTime"),
+                "line": int(vector.findtext("line")),
+                "pixel": [int(v) for v in vector.findtext("pixel").split()],
+                "sigmaNought": [float(v) for v in vector.findtext("sigmaNought").split()],
+            })
+
+        return {
+            "absoluteCalibrationConstant": absolute_calibration_constant,
+            "calibrationVectorList": vectors,
+        }
+
+    def _extract_metadata(self, item):
+        """
+        Builds a metadata dictionary for a single Sentinel-1 STAC item, combining
+        its SAR/orbit properties with the per-polarization calibration LUTs
+        (`calibration-iw-vv.xml` / `calibration-iw-vh.xml`) needed for radiometric
+        calibration (DN -> sigma0 -> dB).
+
+        Parameters:
+        - item (pystac.Item): STAC item for a single Sentinel-1 scene.
+
+        Returns:
+        - dict: Scene properties plus a 'calibration' entry keyed by polarization.
+        """
+        metadata = dict(item.properties)
+        metadata["id"] = item.id
+
+        calibration = {}
+        for pol in ("vv", "vh"):
+            asset_key = f"schema-calibration-{pol}"
+            if asset_key not in item.assets:
+                continue
+            try:
+                xml_bytes = self._fetch_asset_bytes(item.assets[asset_key].href)
+                calibration[pol] = self._parse_calibration_xml(xml_bytes)
+            except Exception as e:
+                calibration[pol] = {"error": str(e)}
+
+        metadata["calibration"] = calibration
+        return metadata
 
     def _get_utm_crs(self, lat, lon):
         """

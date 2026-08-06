@@ -1,3 +1,4 @@
+import os
 import planetary_computer
 from odc.stac import load
 import xarray as xr
@@ -37,6 +38,8 @@ class Sentinel1Miner:
             planetary_computer.settings.set_subscription_key("1d7ae9ea9d3843749757036a903ddb6c")
             self.catalog = Client.open(self.catalog_url, modifier=planetary_computer.sign_inplace)
         else:
+            if self.catalog_url == self.available_engines["element84"]["catalog_url"]:
+                os.environ["AWS_NO_SIGN_REQUEST"] = "YES"
             self.catalog = Client.open(self.catalog_url)
 
     def fetch(self, lat=None, lon=None, radius=None, polygon=None, daterange="2024-01-01/2024-01-10", merge_nodata=False):

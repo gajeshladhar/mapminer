@@ -20,16 +20,24 @@ class Sentinel1Miner:
             "catalog_url": "https://stac.dataspace.copernicus.eu/v1",
             "collection": "sentinel-1-grd"
         },
+        "element84": {
+            "catalog_url": "https://earth-search.aws.element84.com/v1",
+            "collection": "sentinel-1-grd"
+        },
     }
     def __init__(self,engine="planetary_computer"):
         """
-        Initializes the Sentinel1GRDMiner class with a Planetary Computer API key.
+        Initializes the Sentinel1GRDMiner class using the specified STAC engine.
         """
-        planetary_computer.settings.set_subscription_key("1d7ae9ea9d3843749757036a903ddb6c")
-        self.catalog = Client.open("https://planetarycomputer.microsoft.com/api/stac/v1",modifier=planetary_computer.sign_inplace)
         engine = self.available_engines.get(engine)
         self.catalog_url = engine["catalog_url"]
         self.collection = engine["collection"]
+
+        if self.catalog_url == self.available_engines["planetary_computer"]["catalog_url"]:
+            planetary_computer.settings.set_subscription_key("1d7ae9ea9d3843749757036a903ddb6c")
+            self.catalog = Client.open(self.catalog_url, modifier=planetary_computer.sign_inplace)
+        else:
+            self.catalog = Client.open(self.catalog_url)
 
     def fetch(self, lat=None, lon=None, radius=None, polygon=None, daterange="2024-01-01/2024-01-10", merge_nodata=False):
         """
